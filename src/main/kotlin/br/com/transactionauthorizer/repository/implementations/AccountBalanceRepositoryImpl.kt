@@ -53,25 +53,22 @@ class AccountBalanceRepositoryImpl : AccountBalanceRepository {
         return balances
     }
 
-    override fun createAccountBalance(
+    override fun upsertAccountBalance(
         accountId: Long,
-        accountBalanceType: AccountBalanceType,
-        amount: BigDecimal
-    ): AccountBalance {
-        var createdAccountBalance: AccountBalance? = null
-
-        transaction {
-            val id = AccountBalanceTable.insertAndGetId {
-                it[AccountBalanceTable.accountId] = accountId
-                it[AccountBalanceTable.accountBalanceType] = accountBalanceType
-                it[AccountBalanceTable.amount] = amount
-            }.value
-
-            createdAccountBalance = getAccountBalanceById(id)
+        accountBalanceType: AccountBalanceType
+    ) = try {
+            getAccountBalanceByAccountIdAndType(accountId, accountBalanceType)
+        } catch (ex: AccountBalanceNotFoundByAccountIdAndTypeException) {
+            transaction {
+                val id = AccountBalanceTable.insertAndGetId {
+                    it[AccountBalanceTable.accountId] = accountId
+                    it[AccountBalanceTable.accountBalanceType] = accountBalanceType
+                    it[amount] = BigDecimal(0.00)
+                }.value
+                getAccountBalanceById(id)
+            }
         }
 
-        return createdAccountBalance!!
-    }
 
     override fun updateAccountBalanceAmount(
         accountBalanceId: Long,

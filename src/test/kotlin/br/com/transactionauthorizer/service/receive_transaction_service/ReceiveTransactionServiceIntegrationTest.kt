@@ -36,11 +36,11 @@ class ReceiveTransactionServiceIntegrationTest(
     @Test
     fun `should commit transaction when all operations succeed`() {
         val account = accountRepository.createAccount("Jane Doe")
-        val accountBalance = accountBalanceRepository.createAccountBalance(
-            amount = BigDecimal(200),
+        val accountBalance = accountBalanceRepository.upsertAccountBalance(
             accountBalanceType = AccountBalanceType.MEAL,
             accountId = account.id!!
         )
+        accountBalanceRepository.updateAccountBalanceAmount(accountBalance.id!!, BigDecimal(200))
 
         val request = ReceivedTransactionRequest(
             account = account.id.toString(),
@@ -67,11 +67,11 @@ class ReceiveTransactionServiceIntegrationTest(
     @Test
     fun `should commit denied transaction when insufficient funds`() {
         val account = accountRepository.createAccount("John Doe")
-        val accountBalance = accountBalanceRepository.createAccountBalance(
-            amount = BigDecimal(30),
+        val accountBalance = accountBalanceRepository.upsertAccountBalance(
             accountBalanceType = AccountBalanceType.CASH,
             accountId = account.id!!
         )
+        accountBalanceRepository.updateAccountBalanceAmount(accountBalance.id!!, BigDecimal(30))
 
         val request = ReceivedTransactionRequest(
             account = account.id.toString(),

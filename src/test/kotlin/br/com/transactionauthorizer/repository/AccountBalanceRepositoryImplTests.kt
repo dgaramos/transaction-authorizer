@@ -9,6 +9,7 @@ import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.*
 import java.math.BigDecimal
+import java.math.RoundingMode
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AccountBalanceRepositoryImplTest {
@@ -38,9 +39,9 @@ class AccountBalanceRepositoryImplTest {
     fun `test create account balance`() {
         val accountId = 123L
         val balanceType = AccountBalanceType.CASH
-        val amount = BigDecimal("100.00")
+        val amount = BigDecimal(0).setScale(2, RoundingMode.HALF_UP)
 
-        val createdAccountBalance = repository.createAccountBalance(accountId, balanceType, amount)
+        val createdAccountBalance = repository.upsertAccountBalance(accountId, balanceType)
 
         Assertions.assertNotNull(createdAccountBalance)
         Assertions.assertEquals(accountId, createdAccountBalance.accountId)
@@ -49,12 +50,28 @@ class AccountBalanceRepositoryImplTest {
     }
 
     @Test
+    fun `test create account balance returns already existing account balance`() {
+        val accountId = 123L
+        val balanceType = AccountBalanceType.CASH
+        val amount = BigDecimal("100.00")
+
+        val alreadyExistingAccountBalance = repository.upsertAccountBalance(accountId, balanceType)
+        repository.updateAccountBalanceAmount(alreadyExistingAccountBalance.id!!, amount)
+
+        val createdAccountBalance = repository.upsertAccountBalance(accountId, balanceType)
+
+        Assertions.assertNotNull(createdAccountBalance)
+        Assertions.assertEquals(alreadyExistingAccountBalance.accountId, createdAccountBalance.accountId)
+        Assertions.assertEquals(alreadyExistingAccountBalance.accountBalanceType, createdAccountBalance.accountBalanceType)
+        Assertions.assertEquals(amount, createdAccountBalance.amount)
+    }
+
+    @Test
     fun `test get account balance by ID`() {
         val accountId = 123L
         val balanceType = AccountBalanceType.MEAL
-        val amount = BigDecimal("50.00")
 
-        val createdAccountBalance = repository.createAccountBalance(accountId, balanceType, amount)
+        val createdAccountBalance = repository.upsertAccountBalance(accountId, balanceType)
 
         val fetchedBalance = repository.getAccountBalanceById(createdAccountBalance.id!!)
 
@@ -77,9 +94,8 @@ class AccountBalanceRepositoryImplTest {
     fun `test get account balance by account ID and type`() {
         val accountId = 123L
         val balanceType = AccountBalanceType.MEAL
-        val amount = BigDecimal("50.00")
 
-        val createdAccountBalance = repository.createAccountBalance(accountId, balanceType, amount)
+        val createdAccountBalance = repository.upsertAccountBalance(accountId, balanceType)
 
         val fetchedBalance = repository.getAccountBalanceByAccountIdAndType(accountId, balanceType)
 
@@ -104,8 +120,8 @@ class AccountBalanceRepositoryImplTest {
     @Test
     fun `test get account balances by account ID`() {
         val accountId = 123L
-        repository.createAccountBalance(accountId, AccountBalanceType.CASH, BigDecimal("100.00"))
-        repository.createAccountBalance(accountId, AccountBalanceType.MEAL, BigDecimal("50.00"))
+        repository.upsertAccountBalance(accountId, AccountBalanceType.CASH)
+        repository.upsertAccountBalance(accountId, AccountBalanceType.MEAL)
 
         val balances = repository.getAccountBalancesByAccountId(accountId)
 
@@ -125,10 +141,9 @@ class AccountBalanceRepositoryImplTest {
     fun `test update account balance amount`() {
         val accountId = 123L
         val balanceType = AccountBalanceType.CASH
-        val initialAmount = BigDecimal("100.00")
         val updatedAmount = BigDecimal("200.00")
 
-        val createdAccountBalance = repository.createAccountBalance(accountId, balanceType, initialAmount)
+        val createdAccountBalance = repository.upsertAccountBalance(accountId, balanceType)
 
         val updatedBalance = repository.updateAccountBalanceAmount(createdAccountBalance.id!!, updatedAmount)
 

@@ -12,7 +12,7 @@ interface AccountBalanceRepository {
 
     fun getAccountBalancesByAccountId(accountId: Long): List<AccountBalance>
 
-    fun createAccountBalance(accountId: Long, accountBalanceType: AccountBalanceType, amount: BigDecimal): AccountBalance
+    fun upsertAccountBalance(accountId: Long, accountBalanceType: AccountBalanceType): AccountBalance
 
     fun updateAccountBalanceAmount(accountBalanceId: Long, newAmount: BigDecimal): AccountBalance
 }
