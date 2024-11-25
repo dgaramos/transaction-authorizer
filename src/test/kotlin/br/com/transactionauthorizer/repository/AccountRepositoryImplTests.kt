@@ -1,7 +1,7 @@
 package br.com.transactionauthorizer.repository
 
-import br.com.transactionauthorizer.exceptions.AccountBalanceNotFoundByIdException
 import br.com.transactionauthorizer.exceptions.AccountNotFoundByIdException
+import br.com.transactionauthorizer.factory.TestTableFactory
 import br.com.transactionauthorizer.model.Account
 import br.com.transactionauthorizer.model.table.AccountTable
 import br.com.transactionauthorizer.repository.implementations.AccountRepositoryImpl
@@ -50,7 +50,9 @@ class AccountRepositoryImplTest {
     @Test
     fun `test get all accounts`() {
         val accountsToCreate = listOf("Account 1", "Account 2", "Account 3")
-        accountsToCreate.forEach { repository.createAccount(it) }
+        accountsToCreate.forEach {
+            TestTableFactory.createAccount(name = it)
+        }
 
         val accounts = repository.getAllAccounts()
 
@@ -61,13 +63,13 @@ class AccountRepositoryImplTest {
     @Test
     fun `test get account by id`() {
         val name = "Account by ID"
-        val createdAccount = repository.createAccount(name)
+        val accountId = TestTableFactory.createAccount(name = name)
 
-        val retrievedAccount = repository.getAccountById(createdAccount.id!!)
+        val retrievedAccount = repository.getAccountById(accountId)
 
         Assertions.assertNotNull(retrievedAccount)
-        Assertions.assertEquals(createdAccount.id, retrievedAccount?.id)
-        Assertions.assertEquals(createdAccount.name, retrievedAccount?.name)
+        Assertions.assertEquals(accountId, retrievedAccount.id)
+        Assertions.assertEquals(name, retrievedAccount.name)
     }
 
     @Test

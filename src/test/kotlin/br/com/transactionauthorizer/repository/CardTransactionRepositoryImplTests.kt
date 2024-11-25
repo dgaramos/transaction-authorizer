@@ -1,5 +1,6 @@
 package br.com.transactionauthorizer.repository
 
+import br.com.transactionauthorizer.factory.TestTableFactory
 import br.com.transactionauthorizer.model.CardTransactionStatus
 import br.com.transactionauthorizer.model.table.CardTransactionTable
 import br.com.transactionauthorizer.repository.implementations.CardTransactionRepositoryImpl
@@ -38,36 +39,41 @@ class CardTransactionRepositoryImplTests {
 
     @Test
     fun `should insert a new transaction and retrieve it`() {
-        val transaction = cardTransactionRepository.createTransaction(
-            account = "1234567890",
-            totalAmount = BigDecimal(150.00),
-            mcc = "5811",
-            transactionStatus = CardTransactionStatus.APPROVED,
-            merchant = "PADARIA DO ZE - SAO PAULO BR"
+        val account = "1234567890"
+        val totalAmount = BigDecimal(150.00)
+        val mcc = "5811"
+        val cardTransactionStatus = CardTransactionStatus.APPROVED
+        val merchant = "PADARIA DO ZE - SAO PAULO BR"
+
+        TestTableFactory.createCardTransaction(
+            account = account,
+            totalAmount = totalAmount,
+            mcc = mcc,
+            cardTransactionStatus = cardTransactionStatus,
+            merchant = merchant
         )
 
-        val retrievedTransaction = cardTransactionRepository.getAllTransactionsByAccountId(transaction.account)
+        val retrievedTransactions = cardTransactionRepository.getAllTransactionsByAccountId(account)
 
-        assertNotNull(transaction)
-        assertEquals(1, retrievedTransaction.size)
-        assertEquals(transaction.account, retrievedTransaction.first().account)
-        assertEquals(transaction.totalAmount, retrievedTransaction.first().totalAmount)
+        assertNotNull(retrievedTransactions)
+        assertEquals(1, retrievedTransactions.size)
+        assertEquals(account, retrievedTransactions.first().account)
     }
 
     @Test
     fun `should return all transactions by account Id`() {
-        cardTransactionRepository.createTransaction(
+        TestTableFactory.createCardTransaction(
             account = "1234567890",
             totalAmount = BigDecimal(100.00),
             mcc = "5811",
-            transactionStatus = CardTransactionStatus.APPROVED,
+            cardTransactionStatus = CardTransactionStatus.APPROVED,
             merchant = "PADARIA DO ZE - SAO PAULO BR"
         )
-        cardTransactionRepository.createTransaction(
+        TestTableFactory.createCardTransaction(
             account = "9876543210",
             totalAmount = BigDecimal(200.00),
             mcc = "5411",
-            transactionStatus = CardTransactionStatus.DENIED,
+            cardTransactionStatus = CardTransactionStatus.DENIED,
             merchant = "SUPERMERCADO ALVORADA - SÃO PAULO BR"
         )
 

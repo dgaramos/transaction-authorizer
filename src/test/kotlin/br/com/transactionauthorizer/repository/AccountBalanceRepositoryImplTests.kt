@@ -1,6 +1,7 @@
 package br.com.transactionauthorizer.repository
 
 import br.com.transactionauthorizer.exceptions.*
+import br.com.transactionauthorizer.factory.TestTableFactory
 import br.com.transactionauthorizer.model.AccountBalanceType
 import br.com.transactionauthorizer.model.table.AccountBalanceTable
 import br.com.transactionauthorizer.repository.implementations.AccountBalanceRepositoryImpl
@@ -36,7 +37,7 @@ class AccountBalanceRepositoryImplTest {
     }
 
     @Test
-    fun `test create account balance`() {
+    fun `test upsert account balance`() {
         val accountId = 123L
         val balanceType = AccountBalanceType.CASH
         val amount = BigDecimal(0).setScale(2, RoundingMode.HALF_UP)
@@ -50,19 +51,23 @@ class AccountBalanceRepositoryImplTest {
     }
 
     @Test
-    fun `test create account balance returns already existing account balance`() {
+    fun `test upsert account balance returns already existing account balance`() {
         val accountId = 123L
         val balanceType = AccountBalanceType.CASH
         val amount = BigDecimal("100.00")
 
-        val alreadyExistingAccountBalance = repository.upsertAccountBalance(accountId, balanceType)
-        repository.updateAccountBalanceAmount(alreadyExistingAccountBalance.id!!, amount)
+        val existingBalanceId = TestTableFactory.createAccountBalance(
+            accountId = accountId,
+            accountBalanceType = balanceType,
+            amount = amount
+        )
 
         val createdAccountBalance = repository.upsertAccountBalance(accountId, balanceType)
 
         Assertions.assertNotNull(createdAccountBalance)
-        Assertions.assertEquals(alreadyExistingAccountBalance.accountId, createdAccountBalance.accountId)
-        Assertions.assertEquals(alreadyExistingAccountBalance.accountBalanceType, createdAccountBalance.accountBalanceType)
+        Assertions.assertEquals(existingBalanceId, createdAccountBalance.id!!)
+        Assertions.assertEquals(accountId, createdAccountBalance.accountId)
+        Assertions.assertEquals(balanceType, createdAccountBalance.accountBalanceType)
         Assertions.assertEquals(amount, createdAccountBalance.amount)
     }
 
@@ -70,15 +75,20 @@ class AccountBalanceRepositoryImplTest {
     fun `test get account balance by ID`() {
         val accountId = 123L
         val balanceType = AccountBalanceType.MEAL
+        val amount = BigDecimal("100.00")
 
-        val createdAccountBalance = repository.upsertAccountBalance(accountId, balanceType)
+        val balanceId = TestTableFactory.createAccountBalance(
+            accountId = accountId,
+            accountBalanceType = balanceType,
+            amount = amount
+        )
 
-        val fetchedBalance = repository.getAccountBalanceById(createdAccountBalance.id!!)
+        val fetchedBalance = repository.getAccountBalanceById(balanceId)
 
         Assertions.assertNotNull(fetchedBalance)
-        Assertions.assertEquals(createdAccountBalance.id, fetchedBalance.id)
-        Assertions.assertEquals(createdAccountBalance.accountId, fetchedBalance.accountId)
-        Assertions.assertEquals(createdAccountBalance.amount, fetchedBalance.amount)
+        Assertions.assertEquals(balanceId, fetchedBalance.id)
+        Assertions.assertEquals(accountId, fetchedBalance.accountId)
+        Assertions.assertEquals(amount, fetchedBalance.amount)
     }
 
     @Test
@@ -94,15 +104,21 @@ class AccountBalanceRepositoryImplTest {
     fun `test get account balance by account ID and type`() {
         val accountId = 123L
         val balanceType = AccountBalanceType.MEAL
+        val amount = BigDecimal("100.00")
 
-        val createdAccountBalance = repository.upsertAccountBalance(accountId, balanceType)
+        val balanceId = TestTableFactory.createAccountBalance(
+            accountId = accountId,
+            accountBalanceType = balanceType,
+            amount = amount
+        )
 
         val fetchedBalance = repository.getAccountBalanceByAccountIdAndType(accountId, balanceType)
 
         Assertions.assertNotNull(fetchedBalance)
-        Assertions.assertEquals(createdAccountBalance.id, fetchedBalance.id)
-        Assertions.assertEquals(createdAccountBalance.accountId, fetchedBalance.accountId)
-        Assertions.assertEquals(createdAccountBalance.amount, fetchedBalance.amount)
+        Assertions.assertEquals(balanceId, fetchedBalance.id)
+        Assertions.assertEquals(accountId, fetchedBalance.accountId)
+        Assertions.assertEquals(balanceType, fetchedBalance.accountBalanceType)
+        Assertions.assertEquals(amount, fetchedBalance.amount)
     }
 
     @Test
@@ -120,12 +136,23 @@ class AccountBalanceRepositoryImplTest {
     @Test
     fun `test get account balances by account ID`() {
         val accountId = 123L
-        repository.upsertAccountBalance(accountId, AccountBalanceType.CASH)
-        repository.upsertAccountBalance(accountId, AccountBalanceType.MEAL)
+
+        TestTableFactory.createAccountBalance(
+            accountId = accountId,
+            accountBalanceType = AccountBalanceType.CASH
+        )
+        TestTableFactory.createAccountBalance(
+            accountId = accountId,
+            accountBalanceType = AccountBalanceType.MEAL
+        )
+        TestTableFactory.createAccountBalance(
+            accountId = accountId,
+            accountBalanceType = AccountBalanceType.FOOD
+        )
 
         val balances = repository.getAccountBalancesByAccountId(accountId)
 
-        Assertions.assertEquals(2, balances.size)
+        Assertions.assertEquals(3, balances.size)
     }
 
     @Test
@@ -143,9 +170,12 @@ class AccountBalanceRepositoryImplTest {
         val balanceType = AccountBalanceType.CASH
         val updatedAmount = BigDecimal("200.00")
 
-        val createdAccountBalance = repository.upsertAccountBalance(accountId, balanceType)
+        val balanceIdMeal = TestTableFactory.createAccountBalance(
+            accountId = accountId,
+            accountBalanceType = balanceType
+        )
 
-        val updatedBalance = repository.updateAccountBalanceAmount(createdAccountBalance.id!!, updatedAmount)
+        val updatedBalance = repository.updateAccountBalanceAmount(balanceIdMeal, updatedAmount)
 
         Assertions.assertNotNull(updatedBalance)
         Assertions.assertEquals(updatedAmount, updatedBalance.amount)
