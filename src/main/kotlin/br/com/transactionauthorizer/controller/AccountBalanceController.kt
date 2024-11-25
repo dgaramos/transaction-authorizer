@@ -22,7 +22,7 @@ class AccountBalanceController(
     fun createAccountBalance(
         @RequestBody createAccountBalanceRequest: CreateAccountBalanceRequest
     ): ResponseEntity<AccountBalanceCreatedResponse> {
-        val createdBalance = accountBalanceService.createAccountBalance(
+        val createdBalance = accountBalanceService.upsertAccountBalance(
             createAccountBalanceRequest.accountId,
             createAccountBalanceRequest.type
         )

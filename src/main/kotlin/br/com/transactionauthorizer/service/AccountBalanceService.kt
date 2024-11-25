@@ -6,7 +6,7 @@ import java.math.BigDecimal
 
 interface AccountBalanceService {
 
-    fun createAccountBalance(accountId: Long, type: AccountBalanceType): AccountBalance
+    fun upsertAccountBalance(accountId: Long, type: AccountBalanceType): AccountBalance
     fun getAccountBalanceByAccountIdAndType(accountId: Long, type: AccountBalanceType): AccountBalance
     fun getAccountBalancesByAccountId(accountId: Long): List<AccountBalance>
     fun updateAccountBalanceAmount(id: Long, newAmount: BigDecimal): AccountBalance

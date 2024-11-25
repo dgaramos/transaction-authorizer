@@ -6,11 +6,7 @@ import java.math.BigDecimal
 
 interface CardTransactionRepository {
 
-    fun getAllTransactions(): List<CardTransaction>
-
     fun getAllTransactionsByAccountId(account: String): List<CardTransaction>
-
-    fun getTransactionById(id: Long): CardTransaction?
 
     fun createTransaction(
         account: String,

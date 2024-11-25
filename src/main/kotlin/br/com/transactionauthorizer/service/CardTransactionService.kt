@@ -6,8 +6,6 @@ import java.math.BigDecimal
 
 interface CardTransactionService {
 
-    fun getAllTransactions(): List<CardTransaction>
-    fun getTransactionById(id: Long): CardTransaction?
     fun createTransaction(
         account: String,
         totalAmount: BigDecimal,

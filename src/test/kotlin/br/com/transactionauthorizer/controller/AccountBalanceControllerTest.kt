@@ -16,7 +16,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import java.math.BigDecimal
-import java.math.RoundingMode
 
 class AccountBalanceControllerTest {
 
@@ -40,7 +39,7 @@ class AccountBalanceControllerTest {
         val createdBalance = AccountBalance(1L, 123L, AccountBalanceType.CASH, BigDecimal(0))
         val amount = BigDecimal(0)
 
-        Mockito.`when`(accountBalanceService.createAccountBalance(123L, AccountBalanceType.CASH))
+        Mockito.`when`(accountBalanceService.upsertAccountBalance(123L, AccountBalanceType.CASH))
             .thenReturn(createdBalance)
 
         val objectMapper = ObjectMapper()
@@ -57,6 +56,6 @@ class AccountBalanceControllerTest {
             .andExpect(MockMvcResultMatchers.jsonPath("$.amount").value(amount))
 
         Mockito.verify(accountBalanceService, Mockito.times(1))
-            .createAccountBalance(123L, AccountBalanceType.CASH)
+            .upsertAccountBalance(123L, AccountBalanceType.CASH)
     }
 }

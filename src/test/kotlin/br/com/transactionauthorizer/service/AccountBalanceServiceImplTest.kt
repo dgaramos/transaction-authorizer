@@ -39,7 +39,7 @@ class AccountBalanceServiceImplTest {
 
         `when`(accountBalanceRepository.upsertAccountBalance(accountId, balanceType,)).thenReturn(accountBalance)
 
-        val createdBalance = accountBalanceService.createAccountBalance(accountId, balanceType)
+        val createdBalance = accountBalanceService.upsertAccountBalance(accountId, balanceType)
 
         Assertions.assertNotNull(createdBalance)
         Assertions.assertEquals(accountId, createdBalance.accountId)

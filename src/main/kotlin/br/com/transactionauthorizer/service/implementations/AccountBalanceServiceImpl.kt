@@ -12,7 +12,7 @@ class AccountBalanceServiceImpl(
     private val repository: AccountBalanceRepository
 ) : AccountBalanceService {
 
-    override fun createAccountBalance(accountId: Long, type: AccountBalanceType): AccountBalance {
+    override fun upsertAccountBalance(accountId: Long, type: AccountBalanceType): AccountBalance {
         return repository.upsertAccountBalance(accountId, type)
     }
 

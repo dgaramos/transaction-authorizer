@@ -14,13 +14,6 @@ import java.math.BigDecimal
 
 @Repository
 class CardTransactionRepositoryImpl : CardTransactionRepository {
-    override fun getAllTransactions(): List<CardTransaction> {
-        return transaction {
-            CardTransactionTable.selectAll().map {
-                mapToCardTransaction(it)
-            }
-        }
-    }
 
     override fun getAllTransactionsByAccountId(account: String): List<CardTransaction> {
         return transaction {
@@ -28,15 +21,6 @@ class CardTransactionRepositoryImpl : CardTransactionRepository {
                 .map {
                     mapToCardTransaction(it)
                 }
-        }
-    }
-
-    override fun getTransactionById(id: Long): CardTransaction? {
-        return transaction {
-            CardTransactionTable.selectAll().where { CardTransactionTable.id eq id }
-                .mapNotNull {
-                    mapToCardTransaction(it)
-                }.singleOrNull()
         }
     }
 
@@ -62,6 +46,15 @@ class CardTransactionRepositoryImpl : CardTransactionRepository {
         }
 
         return createdTransaction!!
+    }
+
+    private fun getTransactionById(id: Long): CardTransaction? {
+        return transaction {
+            CardTransactionTable.selectAll().where { CardTransactionTable.id eq id }
+                .mapNotNull {
+                    mapToCardTransaction(it)
+                }.singleOrNull()
+        }
     }
 
     private fun mapToCardTransaction(row: ResultRow): CardTransaction {

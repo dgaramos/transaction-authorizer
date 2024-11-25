@@ -46,34 +46,12 @@ class CardTransactionRepositoryImplTests {
             merchant = "PADARIA DO ZE - SAO PAULO BR"
         )
 
-        val retrievedTransaction = cardTransactionRepository.getAllTransactions()
+        val retrievedTransaction = cardTransactionRepository.getAllTransactionsByAccountId(transaction.account)
 
         assertNotNull(transaction)
         assertEquals(1, retrievedTransaction.size)
         assertEquals(transaction.account, retrievedTransaction.first().account)
         assertEquals(transaction.totalAmount, retrievedTransaction.first().totalAmount)
-    }
-
-    @Test
-    fun `should return all transactions`() {
-        cardTransactionRepository.createTransaction(
-            account = "1234567890",
-            totalAmount = BigDecimal(100.00),
-            mcc = "5811",
-            transactionStatus = CardTransactionStatus.APPROVED,
-            merchant = "PADARIA DO ZE - SAO PAULO BR"
-        )
-        cardTransactionRepository.createTransaction(
-            account = "9876543210",
-            totalAmount = BigDecimal(200.00),
-            mcc = "5411",
-            transactionStatus = CardTransactionStatus.DENIED,
-            merchant = "SUPERMERCADO ALVORADA - SÃO PAULO BR"
-        )
-
-        val transactions = cardTransactionRepository.getAllTransactions()
-
-        assertEquals(2, transactions.size)
     }
 
     @Test
@@ -96,30 +74,5 @@ class CardTransactionRepositoryImplTests {
         val transactions = cardTransactionRepository.getAllTransactionsByAccountId("9876543210")
 
         assertEquals(1, transactions.size)
-    }
-
-    @Test
-    fun `should return a transaction by its ID`() {
-        val transaction = cardTransactionRepository.createTransaction(
-            account = "1122334455",
-            totalAmount = BigDecimal(50.00),
-            mcc = "5812",
-            transactionStatus = CardTransactionStatus.APPROVED,
-            merchant = "RESTAURANTE SANTANA - RIO DE JANEIRO BR"
-        )
-
-        val retrievedTransaction = transaction {
-            CardTransactionTable.selectAll().where { CardTransactionTable.id eq transaction.id }.singleOrNull()
-        }
-
-        assertNotNull(retrievedTransaction)
-        assertEquals(transaction.account, retrievedTransaction?.get(CardTransactionTable.account))
-    }
-
-    @Test
-    fun `should return null when trying to fetch non-existent transaction by ID`() {
-        val transaction = cardTransactionRepository.getAllTransactions().find { it.id == 999L }
-
-        assertNull(transaction)
     }
 }

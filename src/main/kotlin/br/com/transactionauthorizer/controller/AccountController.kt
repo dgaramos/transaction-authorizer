@@ -1,12 +1,12 @@
 package br.com.transactionauthorizer.controller
 
 import br.com.transactionauthorizer.controller.model.request.AccountRequest
+import br.com.transactionauthorizer.controller.model.response.AccountListResponse
 import br.com.transactionauthorizer.controller.model.response.AccountResponse
-import br.com.transactionauthorizer.service.AccountService
+import br.com.transactionauthorizer.service.implementations.ManageAccountServiceImpl
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
-import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
@@ -15,26 +15,21 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/api/accounts")
 @CrossOrigin(maxAge = 3600)
 class AccountController(
-    private val accountService: AccountService
+    private val manageAccountService: ManageAccountServiceImpl
 ) {
 
     @Operation(summary = "Get all accounts")
     @GetMapping("", produces = ["application/json"])
-    fun getAllAccounts(): ResponseEntity<List<AccountResponse>> {
-        val accounts = accountService.getAllAccounts()
-        val response = accounts.map { AccountResponse.fromAccount(it) }
-        return ResponseEntity(response, HttpStatus.OK)
+    fun getAllAccounts(): ResponseEntity<List<AccountListResponse>> {
+        return manageAccountService.getAllAccounts()
     }
 
-    @Operation(summary = "Get a specific account by ID")
+    @Operation(summary = "Get a specific account by ID with all account balances")
     @GetMapping("/{id}", produces = ["application/json"])
     fun getAccountById(
         @Parameter(description = "ID of the account to retrieve") @PathVariable id: Long
     ): ResponseEntity<AccountResponse> {
-        val account = accountService.getAccountById(id)
-        val response = account?.let { AccountResponse.fromAccount(it) }
-            ?: return ResponseEntity(HttpStatus.NOT_FOUND)
-        return ResponseEntity(response, HttpStatus.OK)
+        return manageAccountService.getAccountById(id)
     }
 
     @Operation(summary = "Create a new account")
@@ -42,8 +37,6 @@ class AccountController(
     fun createAccount(
         @Parameter(description = "Request payload for creating a new account") @RequestBody accountRequest: AccountRequest
     ): ResponseEntity<AccountResponse> {
-        val createdAccount = accountService.createAccount(accountRequest.name)
-        val response = AccountResponse.fromAccount(createdAccount)
-        return ResponseEntity(response, HttpStatus.CREATED)
+        return manageAccountService.createAccount(accountRequest)
     }
 }
