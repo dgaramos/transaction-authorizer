@@ -1,13 +1,13 @@
 package br.com.transactionauthorizer.service.receive_transaction_service
 
 import br.com.transactionauthorizer.controller.model.request.ReceivedTransactionRequest
+import br.com.transactionauthorizer.factory.TestTableFactory
 import br.com.transactionauthorizer.model.AccountBalanceType
 import br.com.transactionauthorizer.model.CardTransactionStatus
 import br.com.transactionauthorizer.model.table.AccountBalanceTable
 import br.com.transactionauthorizer.model.table.AccountTable
 import br.com.transactionauthorizer.model.table.CardTransactionTable
 import br.com.transactionauthorizer.repository.AccountBalanceRepository
-import br.com.transactionauthorizer.repository.AccountRepository
 import br.com.transactionauthorizer.repository.CardTransactionRepository
 import br.com.transactionauthorizer.service.ReceiveTransactionService
 import org.jetbrains.exposed.sql.Database
@@ -29,21 +29,19 @@ import java.math.RoundingMode
 class ReceiveTransactionServiceIntegrationTest(
     @Autowired private val receiveTransactionService: ReceiveTransactionService,
     @Autowired private val cardTransactionRepository: CardTransactionRepository,
-    @Autowired private val accountBalanceRepository: AccountBalanceRepository,
-    @Autowired private val accountRepository: AccountRepository
+    @Autowired private val accountBalanceRepository: AccountBalanceRepository
 ) {
 
     @Test
     fun `should commit transaction when all operations succeed`() {
-        val account = accountRepository.createAccount("Jane Doe")
-        val accountBalance = accountBalanceRepository.upsertAccountBalance(
+        val accountId = TestTableFactory.createAccount(name = "Jane Doe")
+        val accountBalanceId = TestTableFactory.createAccountBalance(
             accountBalanceType = AccountBalanceType.MEAL,
-            accountId = account.id!!
+            accountId = accountId,
+            amount = BigDecimal(200)
         )
-        accountBalanceRepository.updateAccountBalanceAmount(accountBalance.id!!, BigDecimal(200))
-
         val request = ReceivedTransactionRequest(
-            account = account.id.toString(),
+            account = accountId.toString(),
             totalAmount = BigDecimal(50),
             mcc = "5811",
             merchant = "TestMerchant"
@@ -52,7 +50,7 @@ class ReceiveTransactionServiceIntegrationTest(
         val result = receiveTransactionService.receiveTransaction(request)
 
         assertEquals("00", result)
-        val remainingBalance = accountBalanceRepository.getAccountBalanceById(accountBalance.id!!).amount
+        val remainingBalance = accountBalanceRepository.getAccountBalanceById(accountBalanceId).amount
         assertEquals(BigDecimal(150).setScale(2, RoundingMode.HALF_UP), remainingBalance)
 
         val transactions = cardTransactionRepository.getAllTransactionsByAccountId(request.account)
@@ -60,21 +58,21 @@ class ReceiveTransactionServiceIntegrationTest(
         assertEquals(1, transactions.size)
         val transaction = transactions.first()
         assertEquals(CardTransactionStatus.APPROVED, transaction.cardTransactionStatus)
-        assertEquals(account.id.toString(), transaction.account)
+        assertEquals(accountId.toString(), transaction.account)
         assertEquals(BigDecimal(50).setScale(2, RoundingMode.HALF_UP), transaction.totalAmount)
     }
 
     @Test
     fun `should commit denied transaction when insufficient funds`() {
-        val account = accountRepository.createAccount("John Doe")
-        val accountBalance = accountBalanceRepository.upsertAccountBalance(
-            accountBalanceType = AccountBalanceType.CASH,
-            accountId = account.id!!
+        val accountId = TestTableFactory.createAccount(name = "Jane Doe")
+        val accountBalanceId = TestTableFactory.createAccountBalance(
+            accountBalanceType = AccountBalanceType.MEAL,
+            accountId = accountId,
+            amount = BigDecimal(30)
         )
-        accountBalanceRepository.updateAccountBalanceAmount(accountBalance.id!!, BigDecimal(30))
 
         val request = ReceivedTransactionRequest(
-            account = account.id.toString(),
+            account = accountId.toString(),
             totalAmount = BigDecimal(50),
             mcc = "5711",
             merchant = "TestMerchant"
@@ -84,14 +82,14 @@ class ReceiveTransactionServiceIntegrationTest(
 
         assertEquals("51", result)
 
-        val remainingBalance = accountBalanceRepository.getAccountBalanceById(accountBalance.id!!).amount
+        val remainingBalance = accountBalanceRepository.getAccountBalanceById(accountBalanceId).amount
         assertEquals(BigDecimal(30).setScale(2, RoundingMode.HALF_UP), remainingBalance)
 
         val transactions = cardTransactionRepository.getAllTransactionsByAccountId(request.account)
         assertEquals(1, transactions.size)
         val transaction = transactions.first()
         assertEquals(CardTransactionStatus.DENIED, transaction.cardTransactionStatus)
-        assertEquals(account.id.toString(), transaction.account)
+        assertEquals(accountId.toString(), transaction.account)
         assertEquals(BigDecimal(50).setScale(2, RoundingMode.HALF_UP), transaction.totalAmount)
     }
 
