@@ -1,6 +1,6 @@
 package br.com.transactionauthorizer.service
 
-import br.com.transactionauthorizer.model.Account
+import br.com.transactionauthorizer.factory.TestModelFactory
 import br.com.transactionauthorizer.repository.AccountRepository
 import br.com.transactionauthorizer.service.implementations.AccountServiceImpl
 import org.junit.jupiter.api.*
@@ -23,8 +23,8 @@ class AccountServiceImplTest {
 
     @Test
     fun `should return all accounts successfully`() {
-        val account1 = Account(id = 1L, name = "Account 1")
-        val account2 = Account(id = 2L, name = "Account 2")
+        val account1 = TestModelFactory.createAccount(id = 1L, name = "Account 1")
+        val account2 = TestModelFactory.createAccount(id = 2L, name = "Account 2")
 
         `when`(accountRepository.getAllAccounts()).thenReturn(listOf(account1, account2))
 
@@ -40,15 +40,15 @@ class AccountServiceImplTest {
 
     @Test
     fun `should return account by id successfully`() {
-        val account = Account(id = 1L, name = "Account 1")
+        val account = TestModelFactory.createAccount(id = 1L, name = "Account 1")
 
         `when`(accountRepository.getAccountById(1L)).thenReturn(account)
 
         val result = accountService.getAccountById(1L)
 
         Assertions.assertNotNull(result)
-        Assertions.assertEquals(1L, result?.id)
-        Assertions.assertEquals("Account 1", result?.name)
+        Assertions.assertEquals(1L, result.id)
+        Assertions.assertEquals("Account 1", result.name)
 
         verify(accountRepository).getAccountById(1L)
     }
@@ -56,7 +56,7 @@ class AccountServiceImplTest {
     @Test
     fun `should create account successfully`() {
         val name = "New Account"
-        val account = Account(id = 1L, name = name)
+        val account = TestModelFactory.createAccount(id = 1L, name = name)
 
         `when`(accountRepository.createAccount(name)).thenReturn(account)
 

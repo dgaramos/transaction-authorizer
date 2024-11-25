@@ -3,6 +3,7 @@ package br.com.transactionauthorizer.service.receive_transaction_service
 import br.com.transactionauthorizer.controller.model.request.ReceivedTransactionRequest
 import br.com.transactionauthorizer.exceptions.AccountBalanceNotFoundByAccountIdAndTypeException
 import br.com.transactionauthorizer.exceptions.AccountNotFoundByIdException
+import br.com.transactionauthorizer.factory.TestModelFactory
 import br.com.transactionauthorizer.model.*
 import br.com.transactionauthorizer.service.AccountBalanceService
 import br.com.transactionauthorizer.service.AccountService
@@ -55,8 +56,8 @@ class ReceiveTransactionServiceTest {
 
     @Test
     fun `should approve cash transaction when cash account has sufficient balance`() {
-        val account = Account(id = 1, name = "Jane Doe")
-        val cashAccountBalance = AccountBalance(id = 1, amount = BigDecimal(100), accountBalanceType = AccountBalanceType.CASH, accountId = 1L)
+        val account = TestModelFactory.createAccount(id = 1, name = "Jane Doe")
+        val cashAccountBalance = TestModelFactory.createAccountBalance(id = 1, amount = BigDecimal(100), accountBalanceType = AccountBalanceType.CASH, accountId = 1L)
         val cardTransaction = CardTransaction(account = "1", totalAmount = BigDecimal(50), mcc = "5811", merchant = "MealMerchant", cardTransactionStatus = CardTransactionStatus.APPROVED)
         val request = ReceivedTransactionRequest(account = "1", totalAmount = BigDecimal(50), mcc = "5011", merchant = "CashMerchant")
 
@@ -88,8 +89,8 @@ class ReceiveTransactionServiceTest {
 
     @Test
     fun `should deny cash transaction when cash account has insufficient balance`() {
-        val account = Account(id = 1, name = "Jane Doe")
-        val cashAccountBalance = AccountBalance(id = 1, amount = BigDecimal(30), accountBalanceType = AccountBalanceType.CASH, accountId = 1L)
+        val account = TestModelFactory.createAccount(id = 1, name = "Jane Doe")
+        val cashAccountBalance = TestModelFactory.createAccountBalance(id = 1, amount = BigDecimal(30), accountBalanceType = AccountBalanceType.CASH, accountId = 1L)
         val cardTransaction = CardTransaction(account = "1", totalAmount = BigDecimal(50), mcc = "5811", merchant = "MealMerchant", cardTransactionStatus = CardTransactionStatus.DENIED)
         val request = ReceivedTransactionRequest(account = "1", totalAmount = BigDecimal(50), mcc = "5011", merchant = "CashMerchant")
 
@@ -122,8 +123,8 @@ class ReceiveTransactionServiceTest {
 
     @Test
     fun `should deny cash transaction when cash account is not found`() {
-        val account = Account(id = 1, name = "Jane Doe")
-        val cashAccountBalance = AccountBalance(id = 1, amount = BigDecimal(30), accountBalanceType = AccountBalanceType.CASH, accountId = 1L)
+        val account = TestModelFactory.createAccount(id = 1, name = "Jane Doe")
+        val cashAccountBalance = TestModelFactory.createAccountBalance(id = 1, amount = BigDecimal(30), accountBalanceType = AccountBalanceType.CASH, accountId = 1L)
         val cardTransaction = CardTransaction(account = "1", totalAmount = BigDecimal(50), mcc = "5811", merchant = "MealMerchant", cardTransactionStatus = CardTransactionStatus.DENIED)
         val request = ReceivedTransactionRequest(account = "1", totalAmount = BigDecimal(50), mcc = "5011", merchant = "CashMerchant")
 
@@ -160,8 +161,8 @@ class ReceiveTransactionServiceTest {
         merchantName: String,
         mcc: String
     ) {
-        val account = Account(id = 1, name = "Jane Doe")
-        val accountBalance = AccountBalance(id = 2, amount = BigDecimal(60), accountBalanceType = accountBalanceType, accountId = 1L)
+        val account = TestModelFactory.createAccount(id = 1, name = "Jane Doe")
+        val accountBalance = TestModelFactory.createAccountBalance(id = 2, amount = BigDecimal(60), accountBalanceType = accountBalanceType, accountId = 1L)
         val request = ReceivedTransactionRequest(account = "1", totalAmount = BigDecimal(50), mcc = mcc, merchant = merchantName)
 
         `when`(accountService.getAccountById(accountBalance.accountId)).thenReturn(account)
@@ -193,9 +194,9 @@ class ReceiveTransactionServiceTest {
         fallbackAccountBalance: BigDecimal,
         expectedResult: String
     ) {
-        val account = Account(id = 1, name = "Jane Doe")
-        val nonCashAccountBalance = AccountBalance(id = 2, amount = primaryAccountBalance, accountBalanceType = accountBalanceType, accountId = 1L)
-        val cashAccountBalance = AccountBalance(id = 1, amount = fallbackAccountBalance, accountBalanceType = AccountBalanceType.CASH, accountId = 1L)
+        val account = TestModelFactory.createAccount(id = 1, name = "Jane Doe")
+        val nonCashAccountBalance = TestModelFactory.createAccountBalance(id = 2, amount = primaryAccountBalance, accountBalanceType = accountBalanceType, accountId = 1L)
+        val cashAccountBalance = TestModelFactory.createAccountBalance(id = 1, amount = fallbackAccountBalance, accountBalanceType = AccountBalanceType.CASH, accountId = 1L)
         val request = ReceivedTransactionRequest(account = "1", totalAmount = BigDecimal(50), mcc = mcc, merchant = merchantName)
 
         `when`(accountService.getAccountById(nonCashAccountBalance.accountId)).thenReturn(account)
@@ -239,8 +240,8 @@ class ReceiveTransactionServiceTest {
         expectedResult: String,
         expectedTransactionStatus: CardTransactionStatus
     ) {
-        val account = Account(id = 1, name = "Jane Doe")
-        val cashAccountBalance = AccountBalance(id = 1, amount = fallbackAccountBalance, accountBalanceType = AccountBalanceType.CASH, accountId = 1L)
+        val account = TestModelFactory.createAccount(id = 1, name = "Jane Doe")
+        val cashAccountBalance = TestModelFactory.createAccountBalance(id = 1, amount = fallbackAccountBalance, accountBalanceType = AccountBalanceType.CASH, accountId = 1L)
         val request = ReceivedTransactionRequest(account = "1", totalAmount = BigDecimal(50), mcc = mcc, merchant = merchantName)
 
         `when`(accountService.getAccountById(cashAccountBalance.accountId)).thenReturn(account)

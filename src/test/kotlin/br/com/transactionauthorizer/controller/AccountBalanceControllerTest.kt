@@ -1,7 +1,7 @@
 package br.com.transactionauthorizer.controller
 
 import br.com.transactionauthorizer.controller.model.request.CreateAccountBalanceRequest
-import br.com.transactionauthorizer.model.AccountBalance
+import br.com.transactionauthorizer.factory.TestModelFactory
 import br.com.transactionauthorizer.model.AccountBalanceType
 import br.com.transactionauthorizer.service.AccountBalanceService
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -36,7 +36,7 @@ class AccountBalanceControllerTest {
     @Test
     fun `test create account balance`() {
         val request = CreateAccountBalanceRequest(123L, AccountBalanceType.CASH)
-        val createdBalance = AccountBalance(1L, 123L, AccountBalanceType.CASH, BigDecimal(0))
+        val createdBalance = TestModelFactory.createAccountBalance(1L, 123L, AccountBalanceType.CASH, BigDecimal(0))
         val amount = BigDecimal(0)
 
         Mockito.`when`(accountBalanceService.upsertAccountBalance(123L, AccountBalanceType.CASH))
