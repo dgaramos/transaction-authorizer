@@ -14,5 +14,9 @@ data class AccountBalance(
 }
 
 enum class AccountBalanceType {
-    CASH, MEAL, FOOD
+    CASH, MEAL, FOOD;
+
+    fun isCash(): Boolean {
+        return this == CASH
+    }
 }

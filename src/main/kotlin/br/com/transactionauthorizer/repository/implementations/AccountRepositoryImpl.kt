@@ -1,5 +1,7 @@
 package br.com.transactionauthorizer.repository.implementations
 
+import br.com.transactionauthorizer.exceptions.AccountBalanceNotFoundByAccountIdAndTypeException
+import br.com.transactionauthorizer.exceptions.AccountNotFoundByIdException
 import br.com.transactionauthorizer.model.Account
 import br.com.transactionauthorizer.model.table.AccountTable
 import br.com.transactionauthorizer.repository.AccountRepository
@@ -23,7 +25,7 @@ class AccountRepositoryImpl : AccountRepository {
         }
     }
 
-    override fun getAccountById(id: Long): Account? {
+    override fun getAccountById(id: Long): Account {
         return transaction {
             AccountTable
                 .select { AccountTable.id eq id }
@@ -34,7 +36,7 @@ class AccountRepositoryImpl : AccountRepository {
                     )
                 }
                 .singleOrNull()
-        }
+        } ?: throw AccountNotFoundByIdException(id)
     }
     override fun createAccount(name: String): Account {
         return transaction {

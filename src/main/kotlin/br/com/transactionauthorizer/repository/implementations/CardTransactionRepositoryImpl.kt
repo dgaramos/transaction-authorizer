@@ -1,5 +1,6 @@
 package br.com.transactionauthorizer.repository.implementations
 
+import br.com.transactionauthorizer.model.Account
 import br.com.transactionauthorizer.model.CardTransaction
 import br.com.transactionauthorizer.model.CardTransactionStatus
 import br.com.transactionauthorizer.model.table.CardTransactionTable
@@ -18,6 +19,15 @@ class CardTransactionRepositoryImpl : CardTransactionRepository {
             CardTransactionTable.selectAll().map {
                 mapToCardTransaction(it)
             }
+        }
+    }
+
+    override fun getAllTransactionsByAccountId(account: String): List<CardTransaction> {
+        return transaction {
+            CardTransactionTable.selectAll().where { CardTransactionTable.account eq account }
+                .map {
+                    mapToCardTransaction(it)
+                }
         }
     }
 

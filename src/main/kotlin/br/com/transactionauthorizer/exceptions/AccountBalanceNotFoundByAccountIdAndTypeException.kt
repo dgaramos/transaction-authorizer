@@ -4,7 +4,7 @@ import br.com.transactionauthorizer.model.AccountBalanceType
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.ResponseStatus
 
-@ResponseStatus(HttpStatus.BAD_REQUEST)
+@ResponseStatus(HttpStatus.NOT_FOUND)
 class AccountBalanceNotFoundByAccountIdAndTypeException(
     accountId: Long,
     type: AccountBalanceType

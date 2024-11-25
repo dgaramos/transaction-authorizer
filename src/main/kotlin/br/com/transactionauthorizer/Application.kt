@@ -1,7 +1,6 @@
 package br.com.transactionauthorizer
 
 import br.com.transactionauthorizer.config.DatabaseConfig
-import br.com.transactionauthorizer.utils.DatabaseInitializer
 import io.swagger.v3.oas.annotations.OpenAPIDefinition
 import io.swagger.v3.oas.annotations.info.Contact
 import io.swagger.v3.oas.annotations.info.Info
@@ -40,7 +39,6 @@ class TransactionAuthorizerApplication
 
 fun main(args: Array<String>) {
 	DatabaseConfig.initializeDatabase()
-	//DatabaseInitializer.setupSchemaAndData()
 
 	runApplication<TransactionAuthorizerApplication>(*args)
 }

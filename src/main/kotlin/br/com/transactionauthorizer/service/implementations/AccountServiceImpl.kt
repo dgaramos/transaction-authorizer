@@ -16,7 +16,7 @@ class AccountServiceImpl(private val accountRepository: AccountRepository) : Acc
         return accountRepository.getAllAccounts()
     }
 
-    override fun getAccountById(id: Long): Account? {
+    override fun getAccountById(id: Long): Account {
         return accountRepository.getAccountById(id)
     }
 }

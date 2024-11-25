@@ -1,5 +1,7 @@
 package br.com.transactionauthorizer.repository
 
+import br.com.transactionauthorizer.exceptions.AccountBalanceNotFoundByIdException
+import br.com.transactionauthorizer.exceptions.AccountNotFoundByIdException
 import br.com.transactionauthorizer.model.Account
 import br.com.transactionauthorizer.model.table.AccountTable
 import br.com.transactionauthorizer.repository.implementations.AccountRepositoryImpl
@@ -69,9 +71,12 @@ class AccountRepositoryImplTest {
     }
 
     @Test
-    fun `test get account by non-existent id returns null`() {
-        val retrievedAccount = repository.getAccountById(999L) // Non-existent ID
+    fun `test get account by non-existing ID`() {
+        val exception = Assertions.assertThrows(AccountNotFoundByIdException::class.java) {
+            repository.getAccountById(999L)
+        }
 
-        Assertions.assertNull(retrievedAccount)
+        Assertions.assertEquals("Account with accountId 999 not found.", exception.message)
     }
+
 }
