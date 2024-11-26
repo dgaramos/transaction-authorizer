@@ -10,7 +10,7 @@ import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 import java.math.BigDecimal
 import org.junit.jupiter.api.*
-import org.mockito.Mockito.*
+import org.mockito.kotlin.*
 
 class AccountBalanceServiceImplTest {
     @Mock
@@ -36,7 +36,7 @@ class AccountBalanceServiceImplTest {
             accountBalanceType = balanceType,
             amount = amount
         )
-        `when`(accountBalanceRepository.getAccountBalanceById(accountBalance1.id!!)).thenReturn(accountBalance1)
+        whenever(accountBalanceRepository.getAccountBalanceById(accountBalance1.id!!)).thenReturn(accountBalance1)
 
         val balance = accountBalanceService.getAccountBalanceById(accountBalance1.id!!)
 
@@ -53,7 +53,7 @@ class AccountBalanceServiceImplTest {
             amount = amount
         )
 
-        `when`(accountBalanceRepository.upsertAccountBalance(accountId, balanceType,)).thenReturn(accountBalance)
+        whenever(accountBalanceRepository.upsertAccountBalance(accountId, balanceType,)).thenReturn(accountBalance)
 
         val createdBalance = accountBalanceService.upsertAccountBalance(accountId, balanceType)
 
@@ -74,7 +74,7 @@ class AccountBalanceServiceImplTest {
             amount = amount
         )
 
-        `when`(accountBalanceRepository.getAccountBalanceByAccountIdAndType(accountId, balanceType)).thenReturn(accountBalance)
+        whenever(accountBalanceRepository.getAccountBalanceByAccountIdAndType(accountId, balanceType)).thenReturn(accountBalance)
 
         val fetchedBalance = accountBalanceService.getAccountBalanceByAccountIdAndType(accountId, balanceType)
 
@@ -101,7 +101,7 @@ class AccountBalanceServiceImplTest {
             amount = BigDecimal("50.00")
         )
 
-        `when`(accountBalanceRepository.getAccountBalancesByAccountId(accountId)).thenReturn(listOf(accountBalance1, accountBalance2))
+        whenever(accountBalanceRepository.getAccountBalancesByAccountId(accountId)).thenReturn(listOf(accountBalance1, accountBalance2))
 
         val balances = accountBalanceService.getAccountBalancesByAccountId(accountId)
 
@@ -127,7 +127,7 @@ class AccountBalanceServiceImplTest {
 
         val updatedBalance = accountBalance.copy(amount = newAmount)
 
-        `when`(accountBalanceRepository.updateAccountBalanceAmount(accountBalance.id!!, newAmount)).thenReturn(updatedBalance)
+        whenever(accountBalanceRepository.updateAccountBalanceAmount(accountBalance.id!!, newAmount)).thenReturn(updatedBalance)
 
         val result = accountBalanceService.updateAccountBalanceAmount(accountBalance.id!!, newAmount)
 

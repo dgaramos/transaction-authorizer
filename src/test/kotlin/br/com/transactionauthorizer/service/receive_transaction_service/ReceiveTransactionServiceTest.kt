@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
-import org.mockito.Mockito.*
+import org.mockito.kotlin.*
 import java.math.BigDecimal
 import java.util.stream.Stream
 import kotlin.test.assertEquals
@@ -29,9 +29,9 @@ class ReceiveTransactionServiceTest {
 
     @BeforeEach
     fun setUp() {
-        cardTransactionService = mock(CardTransactionService::class.java)
-        accountBalanceService = mock(AccountBalanceService::class.java)
-        accountService = mock(AccountService::class.java)
+        cardTransactionService = mock()
+        accountBalanceService = mock()
+        accountService = mock()
         receiveTransactionService = ReceiveTransactionServiceImpl(cardTransactionService, accountBalanceService, accountService)
     }
 
@@ -39,7 +39,7 @@ class ReceiveTransactionServiceTest {
     fun `should return ERROR when account is not found`() {
         val request = ReceivedTransactionRequest(account = "1", totalAmount = BigDecimal(50), mcc = "5011", merchant = "CashMerchant")
 
-        `when`(accountService.getAccountById(request.account.toLong())).thenThrow(AccountNotFoundByIdException::class.java)
+        whenever(accountService.getAccountById(request.account.toLong())).thenThrow(AccountNotFoundByIdException::class.java)
 
         val result = receiveTransactionService.receiveTransaction(request)
 
@@ -53,9 +53,9 @@ class ReceiveTransactionServiceTest {
         val cardTransaction = TestModelFactory.buildCardTransaction(account = "1", totalAmount = BigDecimal(50), mcc = "5811", merchant = "MealMerchant", cardTransactionStatus = CardTransactionStatus.APPROVED)
         val request = ReceivedTransactionRequest(account = "1", totalAmount = BigDecimal(50), mcc = "5011", merchant = "CashMerchant")
 
-        `when`(accountService.getAccountById(cashAccountBalance.accountId)).thenReturn(account)
-        `when`(accountBalanceService.getAccountBalanceByAccountIdAndType(cashAccountBalance.accountId, cashAccountBalance.accountBalanceType)).thenReturn(cashAccountBalance)
-        `when`(cardTransactionService.createTransaction(
+        whenever(accountService.getAccountById(cashAccountBalance.accountId)).thenReturn(account)
+        whenever(accountBalanceService.getAccountBalanceByAccountIdAndType(cashAccountBalance.accountId, cashAccountBalance.accountBalanceType)).thenReturn(cashAccountBalance)
+        whenever(cardTransactionService.createTransaction(
             account = request.account,
             totalAmount = request.totalAmount,
             mcc = request.mcc,
@@ -87,8 +87,8 @@ class ReceiveTransactionServiceTest {
         val cashAccountBalance = TestModelFactory.buildAccountBalance(id = 1, amount = BigDecimal(30), accountBalanceType = AccountBalanceType.CASH, accountId = 1L)
         val request = ReceivedTransactionRequest(account = "1", totalAmount = BigDecimal(50), mcc = "5011", merchant = "CashMerchant")
 
-        `when`(accountService.getAccountById(cashAccountBalance.accountId)).thenReturn(account)
-        `when`(accountBalanceService.getAccountBalanceByAccountIdAndType(cashAccountBalance.accountId, cashAccountBalance.accountBalanceType)).thenReturn(cashAccountBalance)
+        whenever(accountService.getAccountById(cashAccountBalance.accountId)).thenReturn(account)
+        whenever(accountBalanceService.getAccountBalanceByAccountIdAndType(cashAccountBalance.accountId, cashAccountBalance.accountBalanceType)).thenReturn(cashAccountBalance)
 
 
         val result = receiveTransactionService.receiveTransaction(request)
@@ -107,8 +107,8 @@ class ReceiveTransactionServiceTest {
         val account = TestModelFactory.buildAccount(id = 1, name = "Jane Doe")
         val request = ReceivedTransactionRequest(account = "1", totalAmount = BigDecimal(50), mcc = "5011", merchant = "CashMerchant")
 
-        `when`(accountService.getAccountById(account.id!!)).thenReturn(account)
-        `when`(accountBalanceService.getAccountBalanceByAccountIdAndType(account.id!!, AccountBalanceType.CASH)).thenThrow(AccountBalanceNotFoundByAccountIdAndTypeException::class.java)
+        whenever(accountService.getAccountById(account.id!!)).thenReturn(account)
+        whenever(accountBalanceService.getAccountBalanceByAccountIdAndType(account.id!!, AccountBalanceType.CASH)).thenThrow(AccountBalanceNotFoundByAccountIdAndTypeException::class.java)
 
 
         val result = receiveTransactionService.receiveTransaction(request)
@@ -131,8 +131,8 @@ class ReceiveTransactionServiceTest {
         val accountBalance = TestModelFactory.buildAccountBalance(id = 2, amount = BigDecimal(60), accountBalanceType = accountBalanceType, accountId = 1L)
         val request = ReceivedTransactionRequest(account = "1", totalAmount = BigDecimal(50), mcc = mcc, merchant = merchantName)
 
-        `when`(accountService.getAccountById(accountBalance.accountId)).thenReturn(account)
-        `when`(accountBalanceService.getAccountBalanceByAccountIdAndType(accountBalance.accountId, accountBalanceType)).thenReturn(accountBalance)
+        whenever(accountService.getAccountById(accountBalance.accountId)).thenReturn(account)
+        whenever(accountBalanceService.getAccountBalanceByAccountIdAndType(accountBalance.accountId, accountBalanceType)).thenReturn(accountBalance)
 
         val result = receiveTransactionService.receiveTransaction(request)
 
@@ -166,9 +166,9 @@ class ReceiveTransactionServiceTest {
         val cashAccountBalance = TestModelFactory.buildAccountBalance(id = 1, amount = fallbackAccountBalance, accountBalanceType = AccountBalanceType.CASH, accountId = 1L)
         val request = ReceivedTransactionRequest(account = "1", totalAmount = BigDecimal(50), mcc = mcc, merchant = merchantName)
 
-        `when`(accountService.getAccountById(nonCashAccountBalance.accountId)).thenReturn(account)
-        `when`(accountBalanceService.getAccountBalanceByAccountIdAndType(nonCashAccountBalance.accountId, accountBalanceType)).thenReturn(nonCashAccountBalance)
-        `when`(accountBalanceService.getAccountBalanceByAccountIdAndType(cashAccountBalance.accountId, AccountBalanceType.CASH)).thenReturn(cashAccountBalance)
+        whenever(accountService.getAccountById(nonCashAccountBalance.accountId)).thenReturn(account)
+        whenever(accountBalanceService.getAccountBalanceByAccountIdAndType(nonCashAccountBalance.accountId, accountBalanceType)).thenReturn(nonCashAccountBalance)
+        whenever(accountBalanceService.getAccountBalanceByAccountIdAndType(cashAccountBalance.accountId, AccountBalanceType.CASH)).thenReturn(cashAccountBalance)
 
         val result = receiveTransactionService.receiveTransaction(request)
 
@@ -213,9 +213,9 @@ class ReceiveTransactionServiceTest {
         val cashAccountBalance = TestModelFactory.buildAccountBalance(id = 1, amount = fallbackAccountBalance, accountBalanceType = AccountBalanceType.CASH, accountId = 1L)
         val request = ReceivedTransactionRequest(account = "1", totalAmount = BigDecimal(50), mcc = mcc, merchant = merchantName)
 
-        `when`(accountService.getAccountById(cashAccountBalance.accountId)).thenReturn(account)
-        `when`(accountBalanceService.getAccountBalanceByAccountIdAndType(cashAccountBalance.accountId, accountBalanceType)).thenThrow(AccountBalanceNotFoundByAccountIdAndTypeException::class.java)
-        `when`(accountBalanceService.getAccountBalanceByAccountIdAndType(cashAccountBalance.accountId, AccountBalanceType.CASH)).thenReturn(cashAccountBalance)
+        whenever(accountService.getAccountById(cashAccountBalance.accountId)).thenReturn(account)
+        whenever(accountBalanceService.getAccountBalanceByAccountIdAndType(cashAccountBalance.accountId, accountBalanceType)).thenThrow(AccountBalanceNotFoundByAccountIdAndTypeException::class.java)
+        whenever(accountBalanceService.getAccountBalanceByAccountIdAndType(cashAccountBalance.accountId, AccountBalanceType.CASH)).thenReturn(cashAccountBalance)
 
         val result = receiveTransactionService.receiveTransaction(request)
 

@@ -7,7 +7,7 @@ import br.com.transactionauthorizer.service.implementations.ManageAccountService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.*
+import org.mockito.kotlin.*
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 
@@ -18,7 +18,7 @@ class AccountControllerTest {
 
     @BeforeEach
     fun setUp() {
-        manageAccountService = mock(ManageAccountServiceImpl::class.java)
+        manageAccountService = mock()
         accountController = AccountController(manageAccountService)
     }
 
@@ -28,7 +28,7 @@ class AccountControllerTest {
             AccountListResponse(id = 1L, name = "Account 1"),
             AccountListResponse(id = 2L, name = "Account 2")
         )
-        `when`(manageAccountService.getAllAccounts()).thenReturn(ResponseEntity(accounts, HttpStatus.OK))
+        whenever(manageAccountService.getAllAccounts()).thenReturn(ResponseEntity(accounts, HttpStatus.OK))
 
         val response = accountController.getAllAccounts()
 
@@ -45,7 +45,7 @@ class AccountControllerTest {
             name = "Account 1",
             balances = emptyList()
         )
-        `when`(manageAccountService.getAccountById(accountId)).thenReturn(ResponseEntity(accountResponse, HttpStatus.OK))
+        whenever(manageAccountService.getAccountById(accountId)).thenReturn(ResponseEntity(accountResponse, HttpStatus.OK))
 
         val response = accountController.getAccountById(accountId)
 
@@ -62,7 +62,7 @@ class AccountControllerTest {
             name = "New Account",
             balances = emptyList()
         )
-        `when`(manageAccountService.createAccount(accountRequest)).thenReturn(ResponseEntity(accountResponse, HttpStatus.CREATED))
+        whenever(manageAccountService.createAccount(accountRequest)).thenReturn(ResponseEntity(accountResponse, HttpStatus.CREATED))
 
         val response = accountController.createAccount(accountRequest)
 

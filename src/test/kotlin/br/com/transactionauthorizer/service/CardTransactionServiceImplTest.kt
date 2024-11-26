@@ -7,7 +7,7 @@ import br.com.transactionauthorizer.service.implementations.CardTransactionServi
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.*
+import org.mockito.kotlin.*
 import java.math.BigDecimal
 
 class CardTransactionServiceImplTest {
@@ -17,7 +17,7 @@ class CardTransactionServiceImplTest {
 
     @BeforeEach
     fun setUp() {
-        cardTransactionRepository = mock(CardTransactionRepository::class.java)
+        cardTransactionRepository = mock()
         cardTransactionService = CardTransactionServiceImpl(cardTransactionRepository)
     }
 
@@ -39,7 +39,7 @@ class CardTransactionServiceImplTest {
             cardTransactionStatus = cardTransactionStatus,
             merchant = merchant
         )
-        `when`(cardTransactionRepository.createTransaction(account, totalAmount, mcc, accountBalanceId, cardTransactionStatus, merchant)).thenReturn(cardTransaction)
+        whenever(cardTransactionRepository.createTransaction(account, totalAmount, mcc, accountBalanceId, cardTransactionStatus, merchant)).thenReturn(cardTransaction)
 
         val result = cardTransactionService.createTransaction(account, totalAmount, mcc, accountBalanceId, cardTransactionStatus, merchant)
 
@@ -65,7 +65,7 @@ class CardTransactionServiceImplTest {
             )
         )
 
-        `when`(cardTransactionRepository.getAllTransactionsByAccountBalanceId(accountBalanceId)).thenReturn(cardTransactions)
+        whenever(cardTransactionRepository.getAllTransactionsByAccountBalanceId(accountBalanceId)).thenReturn(cardTransactions)
 
         val result = cardTransactionService.getAllTransactionsByAccountBalanceId(accountBalanceId)
 

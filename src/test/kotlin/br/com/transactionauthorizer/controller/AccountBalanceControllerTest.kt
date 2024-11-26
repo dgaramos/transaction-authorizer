@@ -11,7 +11,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.InjectMocks
 import org.mockito.Mock
-import org.mockito.Mockito
+import org.mockito.kotlin.*
 import org.mockito.MockitoAnnotations
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
@@ -43,7 +43,7 @@ class AccountBalanceControllerTest {
         val createdBalance = TestModelFactory.buildAccountBalance(1L, 123L, AccountBalanceType.CASH, BigDecimal(0))
         val amount = BigDecimal(0)
 
-        Mockito.`when`(accountBalanceService.upsertAccountBalance(123L, AccountBalanceType.CASH))
+        whenever(accountBalanceService.upsertAccountBalance(123L, AccountBalanceType.CASH))
             .thenReturn(createdBalance)
 
         val objectMapper = ObjectMapper()
@@ -59,7 +59,7 @@ class AccountBalanceControllerTest {
             .andExpect(MockMvcResultMatchers.jsonPath("$.type").value("CASH"))
             .andExpect(MockMvcResultMatchers.jsonPath("$.amount").value(amount))
 
-        Mockito.verify(accountBalanceService, Mockito.times(1))
+        verify(accountBalanceService, times(1))
             .upsertAccountBalance(123L, AccountBalanceType.CASH)
     }
 
@@ -75,9 +75,9 @@ class AccountBalanceControllerTest {
                 cardTransactionStatus = CardTransactionStatus.APPROVED
             )
 
-        Mockito.`when`(accountBalanceService.getAccountBalanceById(balanceId))
+        whenever(accountBalanceService.getAccountBalanceById(balanceId))
             .thenReturn(accountBalance)
-        Mockito.`when`(cardTransactionService.getAllTransactionsByAccountBalanceId(balanceId))
+        whenever(cardTransactionService.getAllTransactionsByAccountBalanceId(balanceId))
             .thenReturn(listOf(transactions))
 
         mockMvc.perform(MockMvcRequestBuilders.get("/api/account-balances/$balanceId"))
@@ -88,9 +88,9 @@ class AccountBalanceControllerTest {
             .andExpect(MockMvcResultMatchers.jsonPath("$.transactions.length()").value(1))
 
 
-        Mockito.verify(accountBalanceService, Mockito.times(1))
+        verify(accountBalanceService, times(1))
             .getAccountBalanceById(balanceId)
-        Mockito.verify(cardTransactionService, Mockito.times(1))
+        verify(cardTransactionService, times(1))
             .getAllTransactionsByAccountBalanceId(balanceId)
     }
 }

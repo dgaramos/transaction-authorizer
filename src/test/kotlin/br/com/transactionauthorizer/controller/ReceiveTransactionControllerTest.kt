@@ -7,7 +7,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.InjectMocks
 import org.mockito.Mock
-import org.mockito.Mockito
+import org.mockito.kotlin.*
 import org.mockito.MockitoAnnotations
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
@@ -34,7 +34,7 @@ class ReceiveTransactionControllerTest {
         val request = ReceivedTransactionRequest("123", BigDecimal("100.00"), "MCC1", "Merchant1")
         val transactionCode = "XX"
 
-        Mockito.`when`(receiveTransactionService.receiveTransaction(request))
+        whenever(receiveTransactionService.receiveTransaction(request))
             .thenReturn(transactionCode)
 
         val objectMapper = ObjectMapper()
@@ -48,7 +48,7 @@ class ReceiveTransactionControllerTest {
             .andExpect(MockMvcResultMatchers.status().isOk)
             .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("XX"))
 
-        Mockito.verify(receiveTransactionService, Mockito.times(1))
+        verify(receiveTransactionService, times(1))
             .receiveTransaction(request)
     }
 }

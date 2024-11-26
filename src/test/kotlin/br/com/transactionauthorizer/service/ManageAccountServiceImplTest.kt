@@ -8,7 +8,7 @@ import br.com.transactionauthorizer.service.implementations.ManageAccountService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.*
+import org.mockito.kotlin.*
 import org.springframework.http.HttpStatus
 import kotlin.random.Random
 
@@ -20,8 +20,8 @@ class ManageAccountServiceImplTest {
 
     @BeforeEach
     fun setUp() {
-        accountService = mock(AccountService::class.java)
-        accountBalanceService = mock(AccountBalanceService::class.java)
+        accountService = mock()
+        accountBalanceService = mock()
         manageAccountService = ManageAccountServiceImpl(accountService, accountBalanceService)
     }
 
@@ -31,7 +31,7 @@ class ManageAccountServiceImplTest {
             TestModelFactory.buildAccount(id = 1L, name = "Account 1"),
             TestModelFactory.buildAccount(id = 2L, name = "Account 2")
         )
-        `when`(accountService.getAllAccounts()).thenReturn(accounts)
+        whenever(accountService.getAllAccounts()).thenReturn(accounts)
 
         val response = manageAccountService.getAllAccounts()
 
@@ -47,8 +47,8 @@ class ManageAccountServiceImplTest {
         val balances = listOf(
             AccountBalance(id = 1L, accountId = accountId, accountBalanceType = AccountBalanceType.CASH, amount = 100.toBigDecimal())
         )
-        `when`(accountService.getAccountById(accountId)).thenReturn(account)
-        `when`(accountBalanceService.getAccountBalancesByAccountId(accountId)).thenReturn(balances)
+        whenever(accountService.getAccountById(accountId)).thenReturn(account)
+        whenever(accountBalanceService.getAccountBalancesByAccountId(accountId)).thenReturn(balances)
 
         val response = manageAccountService.getAccountById(accountId)
 
@@ -66,10 +66,10 @@ class ManageAccountServiceImplTest {
         val balances = AccountBalanceType.entries.map { balanceType ->
             TestModelFactory.buildAccountBalance(id = Random.nextLong(), accountId = account.id!!, accountBalanceType = balanceType, amount = 0.toBigDecimal())
         }
-        `when`(accountService.createAccount(accountRequest.name)).thenReturn(account)
-        `when`(accountBalanceService.upsertAccountBalance(account.id!!, AccountBalanceType.CASH)).thenReturn(balances[0])
-        `when`(accountBalanceService.upsertAccountBalance(account.id!!, AccountBalanceType.FOOD)).thenReturn(balances[1])
-        `when`(accountBalanceService.upsertAccountBalance(account.id!!, AccountBalanceType.MEAL)).thenReturn(balances[2])
+        whenever(accountService.createAccount(accountRequest.name)).thenReturn(account)
+        whenever(accountBalanceService.upsertAccountBalance(account.id!!, AccountBalanceType.CASH)).thenReturn(balances[0])
+        whenever(accountBalanceService.upsertAccountBalance(account.id!!, AccountBalanceType.FOOD)).thenReturn(balances[1])
+        whenever(accountBalanceService.upsertAccountBalance(account.id!!, AccountBalanceType.MEAL)).thenReturn(balances[2])
 
         val response = manageAccountService.createAccount(accountRequest)
 
