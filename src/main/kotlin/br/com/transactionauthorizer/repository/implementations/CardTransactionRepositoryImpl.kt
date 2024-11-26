@@ -23,6 +23,15 @@ class CardTransactionRepositoryImpl : CardTransactionRepository {
         }
     }
 
+    override fun getAllTransactionsByAccountBalanceId(accountBalanceId: Long): List<CardTransaction> {
+        return transaction {
+            CardTransactionTable.selectAll().where { CardTransactionTable.accountBalanceId eq accountBalanceId }
+                .map {
+                    mapToCardTransaction(it)
+                }
+        }
+    }
+
     override fun createTransaction(
         account: String,
         totalAmount: BigDecimal,

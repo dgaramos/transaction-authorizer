@@ -3,7 +3,9 @@ package br.com.transactionauthorizer.controller
 import br.com.transactionauthorizer.controller.model.request.CreateAccountBalanceRequest
 import br.com.transactionauthorizer.controller.model.response.AccountBalanceCreatedResponse
 import br.com.transactionauthorizer.service.AccountBalanceService
+import br.com.transactionauthorizer.service.CardTransactionService
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -14,7 +16,8 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/api/account-balances")
 @CrossOrigin(maxAge = 3600)
 class AccountBalanceController(
-    private val accountBalanceService: AccountBalanceService
+    private val accountBalanceService: AccountBalanceService,
+    private val cardTransactionService: CardTransactionService
 ) {
 
     @Operation(summary = "Create a new account balance")
@@ -26,7 +29,21 @@ class AccountBalanceController(
             createAccountBalanceRequest.accountId,
             createAccountBalanceRequest.type
         )
-        val response = AccountBalanceCreatedResponse.fromAccountBalance(createdBalance)
+        val response = AccountBalanceCreatedResponse.fromAccountBalance(createdBalance, emptyList())
         return ResponseEntity(response, HttpStatus.CREATED)
+    }
+
+
+    @Operation(summary = "Get account balance info and its transactions")
+    @GetMapping("/{id}", produces = ["application/json"])
+    fun getAccountBalance(
+        @Parameter(description = "ID of the account balance to retrieve") @PathVariable id: Long
+    ): ResponseEntity<AccountBalanceCreatedResponse> {
+        val response = accountBalanceService.getAccountBalanceById(id).let { balance ->
+            cardTransactionService.getAllTransactionsByAccountBalanceId(balance.id!!).let { transactions ->
+                AccountBalanceCreatedResponse.fromAccountBalance(balance, transactions)
+            }
+        }
+        return ResponseEntity(response, HttpStatus.OK)
     }
 }

@@ -7,14 +7,14 @@ import java.time.LocalDateTime
 object TestModelFactory {
 
     fun buildAccount(
-        id: Long? = null,
+        id: Long = 1L,
         name: String = "Test Account"
     ): Account {
         return Account(id = id, name = name)
     }
 
     fun buildAccountBalance(
-        id: Long? = null,
+        id: Long = 1L,
         accountId: Long = 1L,
         accountBalanceType: AccountBalanceType = AccountBalanceType.CASH,
         amount: BigDecimal = BigDecimal.valueOf(100.0)
@@ -28,7 +28,7 @@ object TestModelFactory {
     }
 
     fun buildCardTransaction(
-        id: Long? = null,
+        id: Long = 1L,
         account: String = "Test Account",
         totalAmount: BigDecimal = BigDecimal.valueOf(50.0),
         mcc: String = "1234",

@@ -29,6 +29,22 @@ class AccountBalanceServiceImplTest {
     }
 
     @Test
+    fun `should get account balances by Id successfully`() {
+        val accountBalance1 = TestModelFactory.buildAccountBalance(
+            id = 1L,
+            accountId = accountId,
+            accountBalanceType = balanceType,
+            amount = amount
+        )
+        `when`(accountBalanceRepository.getAccountBalanceById(accountBalance1.id!!)).thenReturn(accountBalance1)
+
+        val balance = accountBalanceService.getAccountBalanceById(accountBalance1.id!!)
+
+        Assertions.assertNotNull(balance)
+        verify(accountBalanceRepository).getAccountBalanceById(accountBalance1.id!!)
+    }
+
+    @Test
     fun `should create an account balance successfully`() {
         val accountBalance = TestModelFactory.buildAccountBalance(
             id = 1L,

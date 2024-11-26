@@ -81,4 +81,28 @@ class CardTransactionRepositoryImplTests {
 
         assertEquals(1, transactions.size)
     }
+
+    @Test
+    fun `should return all transactions by account balance Id`() {
+        TestTableFactory.createCardTransaction(
+            account = "1234567890",
+            totalAmount = BigDecimal(100.00),
+            mcc = "5811",
+            accountBalanceId = 12L,
+            cardTransactionStatus = CardTransactionStatus.APPROVED,
+            merchant = "PADARIA DO ZE - SAO PAULO BR"
+        )
+        TestTableFactory.createCardTransaction(
+            account = "9876543210",
+            totalAmount = BigDecimal(200.00),
+            mcc = "5411",
+            accountBalanceId = 24L,
+            cardTransactionStatus = CardTransactionStatus.DENIED,
+            merchant = "SUPERMERCADO ALVORADA - SÃO PAULO BR"
+        )
+
+        val transactions = cardTransactionRepository.getAllTransactionsByAccountBalanceId(12L)
+
+        assertEquals(1, transactions.size)
+    }
 }

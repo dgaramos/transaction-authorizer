@@ -8,6 +8,8 @@ interface CardTransactionRepository {
 
     fun getAllTransactionsByAccountId(account: String): List<CardTransaction>
 
+    fun getAllTransactionsByAccountBalanceId(accountBalanceId: Long): List<CardTransaction>
+
     fun createTransaction(
         account: String,
         totalAmount: BigDecimal,

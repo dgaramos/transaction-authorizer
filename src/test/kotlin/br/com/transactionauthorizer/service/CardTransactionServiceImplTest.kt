@@ -54,4 +54,23 @@ class CardTransactionServiceImplTest {
 
         Assertions.assertEquals(cardTransaction, result)
     }
+
+    @Test
+    fun `should find a transaction by account balance Id`() {
+        val accountBalanceId = 1L
+
+        val cardTransactions = listOf(
+            TestModelFactory.buildCardTransaction(
+                accountBalanceId = accountBalanceId,
+            )
+        )
+
+        `when`(cardTransactionRepository.getAllTransactionsByAccountBalanceId(accountBalanceId)).thenReturn(cardTransactions)
+
+        val result = cardTransactionService.getAllTransactionsByAccountBalanceId(accountBalanceId)
+
+        verify(cardTransactionRepository, times(1)).getAllTransactionsByAccountBalanceId(accountBalanceId = accountBalanceId)
+
+        Assertions.assertEquals(cardTransactions, result)
+    }
 }

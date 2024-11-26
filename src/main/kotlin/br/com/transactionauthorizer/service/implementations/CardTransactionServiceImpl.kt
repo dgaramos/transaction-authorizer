@@ -12,6 +12,9 @@ class CardTransactionServiceImpl(
     private val cardTransactionRepository: CardTransactionRepository
 ) : CardTransactionService {
 
+    override fun getAllTransactionsByAccountBalanceId(accountBalanceId: Long) =
+        cardTransactionRepository.getAllTransactionsByAccountBalanceId(accountBalanceId)
+
     override fun createTransaction(
         account: String,
         totalAmount: BigDecimal,
