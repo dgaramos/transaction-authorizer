@@ -30,7 +30,7 @@ class AccountBalanceServiceImplTest {
 
     @Test
     fun `should create an account balance successfully`() {
-        val accountBalance = TestModelFactory.createAccountBalance(
+        val accountBalance = TestModelFactory.buildAccountBalance(
             id = 1L,
             accountId = accountId,
             accountBalanceType = balanceType,
@@ -51,7 +51,7 @@ class AccountBalanceServiceImplTest {
 
     @Test
     fun `should get account balance by accountId and type successfully`() {
-        val accountBalance = TestModelFactory.createAccountBalance(
+        val accountBalance = TestModelFactory.buildAccountBalance(
             id = 1L,
             accountId = accountId,
             accountBalanceType = balanceType,
@@ -72,13 +72,13 @@ class AccountBalanceServiceImplTest {
 
     @Test
     fun `should get account balances by accountId successfully`() {
-        val accountBalance1 = TestModelFactory.createAccountBalance(
+        val accountBalance1 = TestModelFactory.buildAccountBalance(
             id = 1L,
             accountId = accountId,
             accountBalanceType = balanceType,
             amount = amount
         )
-        val accountBalance2 = TestModelFactory.createAccountBalance(
+        val accountBalance2 = TestModelFactory.buildAccountBalance(
             id = 2L,
             accountId = accountId,
             accountBalanceType = AccountBalanceType.MEAL,
@@ -102,7 +102,7 @@ class AccountBalanceServiceImplTest {
         val initialAmount = BigDecimal("100.00")
         val newAmount = BigDecimal("200.00")
 
-        val accountBalance = TestModelFactory.createAccountBalance(
+        val accountBalance = TestModelFactory.buildAccountBalance(
             id = 1L,
             accountId = accountId,
             accountBalanceType = balanceType,

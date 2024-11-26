@@ -23,8 +23,8 @@ class AccountServiceImplTest {
 
     @Test
     fun `should return all accounts successfully`() {
-        val account1 = TestModelFactory.createAccount(id = 1L, name = "Account 1")
-        val account2 = TestModelFactory.createAccount(id = 2L, name = "Account 2")
+        val account1 = TestModelFactory.buildAccount(id = 1L, name = "Account 1")
+        val account2 = TestModelFactory.buildAccount(id = 2L, name = "Account 2")
 
         `when`(accountRepository.getAllAccounts()).thenReturn(listOf(account1, account2))
 
@@ -40,7 +40,7 @@ class AccountServiceImplTest {
 
     @Test
     fun `should return account by id successfully`() {
-        val account = TestModelFactory.createAccount(id = 1L, name = "Account 1")
+        val account = TestModelFactory.buildAccount(id = 1L, name = "Account 1")
 
         `when`(accountRepository.getAccountById(1L)).thenReturn(account)
 
@@ -56,7 +56,7 @@ class AccountServiceImplTest {
     @Test
     fun `should create account successfully`() {
         val name = "New Account"
-        val account = TestModelFactory.createAccount(id = 1L, name = name)
+        val account = TestModelFactory.buildAccount(id = 1L, name = name)
 
         `when`(accountRepository.createAccount(name)).thenReturn(account)
 

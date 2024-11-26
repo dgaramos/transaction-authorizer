@@ -16,13 +16,15 @@ class CardTransactionServiceImpl(
         account: String,
         totalAmount: BigDecimal,
         mcc: String,
+        accountBalanceId: Long,
         transactionStatus: CardTransactionStatus,
         merchant: String
     ) = cardTransactionRepository.createTransaction(
         account = account,
         totalAmount = totalAmount,
         mcc = mcc,
-        transactionStatus = transactionStatus,
+        accountBalanceId = accountBalanceId,
+        cardTransactionStatus = transactionStatus,
         merchant = merchant
     )
 }

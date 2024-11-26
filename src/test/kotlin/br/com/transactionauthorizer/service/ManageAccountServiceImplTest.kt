@@ -2,7 +2,6 @@ package br.com.transactionauthorizer.service
 
 import br.com.transactionauthorizer.controller.model.request.AccountRequest
 import br.com.transactionauthorizer.factory.TestModelFactory
-import br.com.transactionauthorizer.model.Account
 import br.com.transactionauthorizer.model.AccountBalance
 import br.com.transactionauthorizer.model.AccountBalanceType
 import br.com.transactionauthorizer.service.implementations.ManageAccountServiceImpl
@@ -29,8 +28,8 @@ class ManageAccountServiceImplTest {
     @Test
     fun `should retrieve all accounts`() {
         val accounts = listOf(
-            TestModelFactory.createAccount(id = 1L, name = "Account 1"),
-            TestModelFactory.createAccount(id = 2L, name = "Account 2")
+            TestModelFactory.buildAccount(id = 1L, name = "Account 1"),
+            TestModelFactory.buildAccount(id = 2L, name = "Account 2")
         )
         `when`(accountService.getAllAccounts()).thenReturn(accounts)
 
@@ -44,7 +43,7 @@ class ManageAccountServiceImplTest {
     @Test
     fun `should retrieve account by ID`() {
         val accountId = 1L
-        val account = TestModelFactory.createAccount(id = accountId, name = "Account 1")
+        val account = TestModelFactory.buildAccount(id = accountId, name = "Account 1")
         val balances = listOf(
             AccountBalance(id = 1L, accountId = accountId, accountBalanceType = AccountBalanceType.CASH, amount = 100.toBigDecimal())
         )
@@ -63,9 +62,9 @@ class ManageAccountServiceImplTest {
     @Test
     fun `should create a new account`() {
         val accountRequest = AccountRequest(name = "New Account")
-        val account = TestModelFactory.createAccount(id = 1L, name = accountRequest.name)
+        val account = TestModelFactory.buildAccount(id = 1L, name = accountRequest.name)
         val balances = AccountBalanceType.entries.map { balanceType ->
-            TestModelFactory.createAccountBalance(id = Random.nextLong(), accountId = account.id!!, accountBalanceType = balanceType, amount = 0.toBigDecimal())
+            TestModelFactory.buildAccountBalance(id = Random.nextLong(), accountId = account.id!!, accountBalanceType = balanceType, amount = 0.toBigDecimal())
         }
         `when`(accountService.createAccount(accountRequest.name)).thenReturn(account)
         `when`(accountBalanceService.upsertAccountBalance(account.id!!, AccountBalanceType.CASH)).thenReturn(balances[0])

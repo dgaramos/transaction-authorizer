@@ -17,6 +17,7 @@ CREATE TABLE card_transaction (
     account VARCHAR(255) NOT NULL,
     mcc VARCHAR(4) NOT NULL,
     total_amount DECIMAL(15, 2) NOT NULL,
+    account_balance_id BIGINT NOT NULL,
     card_transaction_status VARCHAR(50) NOT NULL,
     merchant VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

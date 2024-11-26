@@ -1,5 +1,6 @@
 package br.com.transactionauthorizer.service.receive_transaction_service
 
+import br.com.transactionauthorizer.constants.MccLists.MEAL_MCCS
 import br.com.transactionauthorizer.controller.model.request.ReceivedTransactionRequest
 import br.com.transactionauthorizer.factory.TestTableFactory
 import br.com.transactionauthorizer.model.AccountBalanceType
@@ -65,6 +66,46 @@ class ReceiveTransactionServiceIntegrationTest(
     @Test
     fun `should commit denied transaction when insufficient funds`() {
         val accountId = TestTableFactory.createAccount(name = "Jane Doe")
+        val mealAccountBalanceId = TestTableFactory.createAccountBalance(
+            accountBalanceType = AccountBalanceType.MEAL,
+            accountId = accountId,
+            amount = BigDecimal(30)
+        )
+        val cashAccountBalanceId = TestTableFactory.createAccountBalance(
+            accountBalanceType = AccountBalanceType.CASH,
+            accountId = accountId,
+            amount = BigDecimal(30)
+        )
+
+        val request = ReceivedTransactionRequest(
+            account = accountId.toString(),
+            totalAmount = BigDecimal(50),
+            mcc = MEAL_MCCS.first(),
+            merchant = "TestMerchant"
+        )
+
+        val result = receiveTransactionService.receiveTransaction(request)
+
+        assertEquals("51", result)
+
+        val remainingMealBalance = accountBalanceRepository.getAccountBalanceById(mealAccountBalanceId).amount
+        assertEquals(BigDecimal(30).setScale(2, RoundingMode.HALF_UP), remainingMealBalance)
+
+
+        val remainingCashBalance = accountBalanceRepository.getAccountBalanceById(cashAccountBalanceId).amount
+        assertEquals(BigDecimal(30).setScale(2, RoundingMode.HALF_UP), remainingCashBalance)
+
+        val transactions = cardTransactionRepository.getAllTransactionsByAccountId(request.account)
+        assertEquals(1, transactions.size)
+        val transaction = transactions.first()
+        assertEquals(CardTransactionStatus.DENIED, transaction.cardTransactionStatus)
+        assertEquals(accountId.toString(), transaction.account)
+        assertEquals(BigDecimal(50).setScale(2, RoundingMode.HALF_UP), transaction.totalAmount)
+    }
+
+    @Test
+    fun `should commit denied transaction when insufficient funds and cash balance does not exist`() {
+        val accountId = TestTableFactory.createAccount(name = "Jane Doe")
         val accountBalanceId = TestTableFactory.createAccountBalance(
             accountBalanceType = AccountBalanceType.MEAL,
             accountId = accountId,
@@ -74,7 +115,7 @@ class ReceiveTransactionServiceIntegrationTest(
         val request = ReceivedTransactionRequest(
             account = accountId.toString(),
             totalAmount = BigDecimal(50),
-            mcc = "5711",
+            mcc = MEAL_MCCS.first(),
             merchant = "TestMerchant"
         )
 

@@ -1,6 +1,5 @@
 package br.com.transactionauthorizer.repository.implementations
 
-import br.com.transactionauthorizer.model.Account
 import br.com.transactionauthorizer.model.CardTransaction
 import br.com.transactionauthorizer.model.CardTransactionStatus
 import br.com.transactionauthorizer.model.table.CardTransactionTable
@@ -28,7 +27,8 @@ class CardTransactionRepositoryImpl : CardTransactionRepository {
         account: String,
         totalAmount: BigDecimal,
         mcc: String,
-        transactionStatus: CardTransactionStatus,
+        accountBalanceId: Long,
+        cardTransactionStatus: CardTransactionStatus,
         merchant: String
     ): CardTransaction {
         var createdTransaction: CardTransaction? = null
@@ -38,7 +38,8 @@ class CardTransactionRepositoryImpl : CardTransactionRepository {
                 it[CardTransactionTable.account] = account
                 it[CardTransactionTable.totalAmount] = totalAmount
                 it[CardTransactionTable.mcc] = mcc
-                it[cardTransactionStatus] = transactionStatus
+                it[CardTransactionTable.accountBalanceId] = accountBalanceId
+                it[CardTransactionTable.cardTransactionStatus] = cardTransactionStatus
                 it[CardTransactionTable.merchant] = merchant
             }.value
 
@@ -64,6 +65,7 @@ class CardTransactionRepositoryImpl : CardTransactionRepository {
             totalAmount = row[CardTransactionTable.totalAmount],
             mcc = row[CardTransactionTable.mcc],
             merchant = row[CardTransactionTable.merchant],
+            accountBalanceId = row[CardTransactionTable.accountBalanceId],
             cardTransactionStatus = row[CardTransactionTable.cardTransactionStatus],
             createdAt = row[CardTransactionTable.createdAt]
         )

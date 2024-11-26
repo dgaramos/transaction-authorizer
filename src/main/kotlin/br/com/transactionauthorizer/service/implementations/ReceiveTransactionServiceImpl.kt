@@ -59,37 +59,31 @@ class ReceiveTransactionServiceImpl(
         accountId: Long
     ): String {
         return when {
-            accountBalance.isCash() -> processCashAccount(accountBalance, transactionAmount, request)
             accountBalance.amount >= transactionAmount -> updateBalance(accountBalance, request)
-            else -> processCashTransaction(accountId, transactionAmount, request)
-        }
-    }
-
-    private fun processCashAccount(
-        accountBalance: AccountBalance,
-        transactionAmount: BigDecimal,
-        request: ReceivedTransactionRequest
-    ): String {
-        return if (accountBalance.amount >= transactionAmount) {
-            updateBalance(accountBalance, request)
-        } else {
-            denyTransaction(request)
+            else -> processCashTransaction(accountId, transactionAmount, request, accountBalance)
         }
     }
 
     private fun processCashTransaction(
         accountId: Long,
         transactionAmount: BigDecimal,
-        request: ReceivedTransactionRequest
+        request: ReceivedTransactionRequest,
+        originalAccountBalance: AccountBalance? = null,
     ) = try {
         val cashAccountBalance = getCashAccountBalance(accountId)
         if (cashAccountBalance.amount >= transactionAmount) {
             updateBalance(cashAccountBalance, request)
         } else {
-            denyTransaction(request)
+            denyTransaction(
+                accountBalance = originalAccountBalance ?: cashAccountBalance,
+                request = request
+            )
         }
     } catch (ex: AccountBalanceNotFoundByAccountIdAndTypeException) {
-        denyTransaction(request)
+        if (originalAccountBalance != null) {
+            denyTransaction(originalAccountBalance, request)
+        } else TransactionStatus.ERROR.code
+
     }
 
     @Transactional
@@ -99,19 +93,21 @@ class ReceiveTransactionServiceImpl(
             totalAmount = request.totalAmount,
             mcc = request.mcc,
             transactionStatus = CardTransactionStatus.APPROVED,
+            accountBalanceId = accountBalance.id!!,
             merchant = request.merchant
         )
         val updatedAmount = accountBalance.amount - request.totalAmount
-        accountBalanceService.updateAccountBalanceAmount(accountBalance.id!!, updatedAmount)
+        accountBalanceService.updateAccountBalanceAmount(accountBalance.id, updatedAmount)
         return TransactionStatus.APPROVED.code
     }
 
-    private fun denyTransaction(request: ReceivedTransactionRequest): String {
+    private fun denyTransaction(accountBalance: AccountBalance, request: ReceivedTransactionRequest): String {
         cardTransactionService.createTransaction(
             account = request.account,
             totalAmount = request.totalAmount,
             mcc = request.mcc,
             transactionStatus = CardTransactionStatus.DENIED,
+            accountBalanceId = accountBalance.id!!,
             merchant = request.merchant
         )
         return TransactionStatus.DENIED.code

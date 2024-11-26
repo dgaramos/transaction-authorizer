@@ -17,6 +17,7 @@ object CardTransactionTable : IdTable<Long>("card_transaction") {
     )
     val mcc = varchar("mcc", 4)
     val merchant = varchar("merchant", 255)
+    val accountBalanceId: Column<Long> = long("account_balance_id")
     val cardTransactionStatus: Column<CardTransactionStatus> =
         CardTransactionTable.enumerationByName(
             name ="card_transaction_status",

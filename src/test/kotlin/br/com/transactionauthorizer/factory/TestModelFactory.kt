@@ -1,20 +1,19 @@
 package br.com.transactionauthorizer.factory
 
-import br.com.transactionauthorizer.controller.model.request.ReceivedTransactionRequest
 import br.com.transactionauthorizer.model.*
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
 object TestModelFactory {
 
-    fun createAccount(
+    fun buildAccount(
         id: Long? = null,
         name: String = "Test Account"
     ): Account {
         return Account(id = id, name = name)
     }
 
-    fun createAccountBalance(
+    fun buildAccountBalance(
         id: Long? = null,
         accountId: Long = 1L,
         accountBalanceType: AccountBalanceType = AccountBalanceType.CASH,
@@ -28,12 +27,13 @@ object TestModelFactory {
         )
     }
 
-    fun createCardTransaction(
+    fun buildCardTransaction(
         id: Long? = null,
         account: String = "Test Account",
         totalAmount: BigDecimal = BigDecimal.valueOf(50.0),
         mcc: String = "1234",
         merchant: String = "Test Merchant",
+        accountBalanceId: Long = 1L,
         cardTransactionStatus: CardTransactionStatus = CardTransactionStatus.APPROVED,
         createdAt: LocalDateTime = LocalDateTime.now()
     ): CardTransaction {
@@ -43,23 +43,9 @@ object TestModelFactory {
             totalAmount = totalAmount,
             mcc = mcc,
             merchant = merchant,
+            accountBalanceId = accountBalanceId,
             cardTransactionStatus = cardTransactionStatus,
             createdAt = createdAt
         )
     }
-
-    fun createReceivedTransactionRequest(
-        account: String = "1",
-        totalAmount: BigDecimal = BigDecimal(100),
-        mcc: String = "5811",
-        merchant: String = "MerchantName"
-    ): ReceivedTransactionRequest {
-        return ReceivedTransactionRequest(
-            account = account,
-            totalAmount = totalAmount,
-            mcc = mcc,
-            merchant = merchant
-        )
-    }
-
 }

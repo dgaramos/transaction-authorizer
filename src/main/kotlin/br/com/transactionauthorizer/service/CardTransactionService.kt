@@ -10,6 +10,7 @@ interface CardTransactionService {
         account: String,
         totalAmount: BigDecimal,
         mcc: String,
+        accountBalanceId: Long,
         transactionStatus: CardTransactionStatus,
         merchant: String
     ): CardTransaction

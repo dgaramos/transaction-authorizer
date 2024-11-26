@@ -12,7 +12,8 @@ interface CardTransactionRepository {
         account: String,
         totalAmount: BigDecimal,
         mcc: String,
-        transactionStatus: CardTransactionStatus,
+        accountBalanceId: Long,
+        cardTransactionStatus: CardTransactionStatus,
         merchant: String
     ): CardTransaction
 }

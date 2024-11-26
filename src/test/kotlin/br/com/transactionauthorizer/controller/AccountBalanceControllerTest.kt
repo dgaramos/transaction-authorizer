@@ -36,7 +36,7 @@ class AccountBalanceControllerTest {
     @Test
     fun `test create account balance`() {
         val request = CreateAccountBalanceRequest(123L, AccountBalanceType.CASH)
-        val createdBalance = TestModelFactory.createAccountBalance(1L, 123L, AccountBalanceType.CASH, BigDecimal(0))
+        val createdBalance = TestModelFactory.buildAccountBalance(1L, 123L, AccountBalanceType.CASH, BigDecimal(0))
         val amount = BigDecimal(0)
 
         Mockito.`when`(accountBalanceService.upsertAccountBalance(123L, AccountBalanceType.CASH))

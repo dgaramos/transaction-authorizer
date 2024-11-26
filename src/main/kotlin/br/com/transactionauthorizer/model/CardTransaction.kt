@@ -9,6 +9,7 @@ data class CardTransaction(
     val totalAmount: BigDecimal,
     val mcc: String,
     val merchant: String,
+    val accountBalanceId: Long,
     val cardTransactionStatus: CardTransactionStatus,
     val createdAt: LocalDateTime = LocalDateTime.now()
 )

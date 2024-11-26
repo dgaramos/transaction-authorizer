@@ -47,6 +47,7 @@ object TestTableFactory {
         totalAmount: BigDecimal = BigDecimal.valueOf(50.00),
         mcc: String = "1234",
         merchant: String = "Test Merchant",
+        accountBalanceId: Long = 1L,
         cardTransactionStatus: CardTransactionStatus = CardTransactionStatus.APPROVED,
         createdAt: LocalDateTime = LocalDateTime.now()
     ): Long {
@@ -57,6 +58,7 @@ object TestTableFactory {
                 it[CardTransactionTable.totalAmount] = totalAmount
                 it[CardTransactionTable.mcc] = mcc
                 it[CardTransactionTable.merchant] = merchant
+                it[CardTransactionTable.accountBalanceId] = accountBalanceId
                 it[CardTransactionTable.cardTransactionStatus] = cardTransactionStatus
                 it[CardTransactionTable.createdAt] = createdAt
             }.value
