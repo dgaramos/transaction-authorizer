@@ -1,6 +1,7 @@
 package br.com.transactionauthorizer.repository
 
 import br.com.transactionauthorizer.exceptions.AccountNotFoundByIdException
+import br.com.transactionauthorizer.factory.TestModelFactory
 import br.com.transactionauthorizer.factory.TestTableFactory
 import br.com.transactionauthorizer.model.Account
 import br.com.transactionauthorizer.model.table.AccountTable
@@ -38,13 +39,12 @@ class AccountRepositoryImplTest {
 
     @Test
     fun `test create account`() {
-        val name = "Test Account"
+        val account = TestModelFactory.buildAccount(id = 1L, name = "Test Account")
 
-        val createdAccount = repository.createAccount(name)
+        val createdAccount = repository.createAccount(account)
 
         Assertions.assertNotNull(createdAccount)
-        Assertions.assertEquals(name, createdAccount.name)
-        Assertions.assertNotNull(createdAccount.id)
+        Assertions.assertEquals(account, createdAccount)
     }
 
     @Test

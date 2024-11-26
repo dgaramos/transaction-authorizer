@@ -6,5 +6,5 @@ interface AccountRepository {
 
     fun getAllAccounts(): List<Account>
     fun getAccountById(id: Long): Account
-    fun createAccount(name: String): Account
+    fun createAccount(account: Account): Account
 }

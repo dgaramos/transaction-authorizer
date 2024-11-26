@@ -1,6 +1,9 @@
 CREATE TABLE account (
     id BIGSERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL
+    name VARCHAR(255) NOT NULL,
+    version BIGINT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE account_balance (
@@ -8,6 +11,9 @@ CREATE TABLE account_balance (
     account_id BIGINT NOT NULL,
     account_balance_type VARCHAR(50) NOT NULL,
     amount DECIMAL(15, 2) NOT NULL,
+    version BIGINT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_account FOREIGN KEY (account_id) REFERENCES account(id),
     CONSTRAINT unique_account_balance_type UNIQUE (account_id, account_balance_type)
 );
@@ -20,5 +26,7 @@ CREATE TABLE card_transaction (
     account_balance_id BIGINT NOT NULL,
     card_transaction_status VARCHAR(50) NOT NULL,
     merchant VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    version BIGINT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

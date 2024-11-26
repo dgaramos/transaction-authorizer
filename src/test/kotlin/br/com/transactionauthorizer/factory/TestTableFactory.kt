@@ -5,7 +5,6 @@ import br.com.transactionauthorizer.model.CardTransactionStatus
 import br.com.transactionauthorizer.model.table.AccountBalanceTable
 import br.com.transactionauthorizer.model.table.AccountTable
 import br.com.transactionauthorizer.model.table.CardTransactionTable
-import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.math.BigDecimal

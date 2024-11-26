@@ -9,7 +9,8 @@ import org.springframework.stereotype.Service
 class AccountServiceImpl(private val accountRepository: AccountRepository) : AccountService {
 
     override fun createAccount(name: String): Account {
-        return accountRepository.createAccount(name)
+        val account = Account(name = name)
+        return accountRepository.createAccount(account)
     }
 
     override fun getAllAccounts(): List<Account> {

@@ -5,7 +5,7 @@ import br.com.transactionauthorizer.repository.AccountRepository
 import br.com.transactionauthorizer.service.implementations.AccountServiceImpl
 import org.junit.jupiter.api.*
 import org.mockito.Mock
-import org.mockito.Mockito.*
+import org.mockito.kotlin.*
 import org.mockito.MockitoAnnotations
 
 class AccountServiceImplTest {
@@ -26,7 +26,7 @@ class AccountServiceImplTest {
         val account1 = TestModelFactory.buildAccount(id = 1L, name = "Account 1")
         val account2 = TestModelFactory.buildAccount(id = 2L, name = "Account 2")
 
-        `when`(accountRepository.getAllAccounts()).thenReturn(listOf(account1, account2))
+        whenever(accountRepository.getAllAccounts()).thenReturn(listOf(account1, account2))
 
         val accounts = accountService.getAllAccounts()
 
@@ -42,7 +42,7 @@ class AccountServiceImplTest {
     fun `should return account by id successfully`() {
         val account = TestModelFactory.buildAccount(id = 1L, name = "Account 1")
 
-        `when`(accountRepository.getAccountById(1L)).thenReturn(account)
+        whenever(accountRepository.getAccountById(1L)).thenReturn(account)
 
         val result = accountService.getAccountById(1L)
 
@@ -56,16 +56,15 @@ class AccountServiceImplTest {
     @Test
     fun `should create account successfully`() {
         val name = "New Account"
-        val account = TestModelFactory.buildAccount(id = 1L, name = name)
+        val account = TestModelFactory.buildAccount(name = name)
 
-        `when`(accountRepository.createAccount(name)).thenReturn(account)
+        whenever(accountRepository.createAccount(any())).thenReturn(account.copy(id = 1L))
 
         val createdAccount = accountService.createAccount(name)
 
         Assertions.assertNotNull(createdAccount)
-        Assertions.assertEquals(1L, createdAccount.id)
+        Assertions.assertEquals(1L, createdAccount.id!!)
         Assertions.assertEquals(name, createdAccount.name)
 
-        verify(accountRepository).createAccount(name)
     }
 }

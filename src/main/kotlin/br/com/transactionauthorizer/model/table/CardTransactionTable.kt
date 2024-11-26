@@ -1,14 +1,9 @@
 package br.com.transactionauthorizer.model.table
 
 import br.com.transactionauthorizer.model.CardTransactionStatus
-import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.dao.id.IdTable
 import org.jetbrains.exposed.sql.Column
-import org.jetbrains.exposed.sql.javatime.CurrentDateTime
-import org.jetbrains.exposed.sql.javatime.datetime
 
-object CardTransactionTable : IdTable<Long>("card_transaction") {
-    override val id: Column<EntityID<Long>> = long("id").autoIncrement().entityId()
+object CardTransactionTable : BaseTable<Long>("card_transaction") {
     val account = varchar("account", 50)
     val totalAmount = decimal(
         name = "total_amount",
@@ -24,7 +19,6 @@ object CardTransactionTable : IdTable<Long>("card_transaction") {
             length = 10,
             klass = CardTransactionStatus::class
         )
-    val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
 
     override val primaryKey = PrimaryKey(id, name = "PK_CardTransaction_Id")
 }

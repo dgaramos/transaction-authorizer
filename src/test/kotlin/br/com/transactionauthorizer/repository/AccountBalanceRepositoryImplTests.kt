@@ -4,6 +4,7 @@ import br.com.transactionauthorizer.exceptions.*
 import br.com.transactionauthorizer.factory.TestTableFactory
 import br.com.transactionauthorizer.model.AccountBalanceType
 import br.com.transactionauthorizer.model.table.AccountBalanceTable
+import br.com.transactionauthorizer.model.table.AccountTable
 import br.com.transactionauthorizer.repository.implementations.AccountBalanceRepositoryImpl
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
@@ -22,6 +23,7 @@ class AccountBalanceRepositoryImplTest {
         // Connect to an in-memory H2 database
         Database.connect("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;", driver = "org.h2.Driver")
         transaction {
+            SchemaUtils.create(AccountTable)
             SchemaUtils.create(AccountBalanceTable)
         }
         repository = AccountBalanceRepositoryImpl()
@@ -31,7 +33,9 @@ class AccountBalanceRepositoryImplTest {
     fun tearDown() {
         // Clean up the database after each test
         transaction {
+            SchemaUtils.drop(AccountTable)
             SchemaUtils.drop(AccountBalanceTable)
+            SchemaUtils.create(AccountTable)
             SchemaUtils.create(AccountBalanceTable)
         }
     }
@@ -166,10 +170,10 @@ class AccountBalanceRepositoryImplTest {
 
     @Test
     fun `test update account balance amount`() {
-        val accountId = 123L
         val balanceType = AccountBalanceType.CASH
         val updatedAmount = BigDecimal("200.00")
 
+        val accountId = TestTableFactory.createAccount()
         val balanceIdMeal = TestTableFactory.createAccountBalance(
             accountId = accountId,
             accountBalanceType = balanceType

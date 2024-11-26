@@ -22,30 +22,47 @@ repositories {
 val exposedVersion = "0.52.0"
 
 dependencies {
+	// Core Spring Boot dependencies
 	implementation("org.springframework.boot:spring-boot-starter-webflux")
 	implementation("org.springframework.boot:spring-boot-starter-hateoas")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.springframework.boot:spring-boot-starter-web")
+
+	// Kotlin support
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
-	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0")
+	implementation("org.jetbrains.kotlin:kotlin-stdlib")
+
+	// Database-related dependencies
 	implementation("org.flywaydb:flyway-core:9.6.0")
-	developmentOnly("org.springframework.boot:spring-boot-devtools")
-	developmentOnly("org.springframework.boot:spring-boot-docker-compose")
 	runtimeOnly("org.postgresql:postgresql")
-	testImplementation("org.springframework.boot:spring-boot-starter-test")
-	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
-	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-	implementation("com.google.code.gson:gson")
 	implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
 	implementation("org.jetbrains.exposed:exposed-dao:$exposedVersion")
 	implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
 	implementation("org.jetbrains.exposed:exposed-java-time:$exposedVersion")
-	testImplementation("com.h2database:h2:2.1.214") // H2 for testing only (in-memory)
-	testRuntimeOnly("com.h2database:h2:2.1.214") // Runtime usage for tests
-	testImplementation("org.springframework.boot:spring-boot-starter-test")
-	testImplementation("io.mockk:mockk:1.12.0")
-	testImplementation("org.springframework:spring-test")
-	testImplementation("org.junit.jupiter:junit-jupiter-params:5.8.2")
+
+	// OpenAPI documentation
+	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0")
+
+	// Utilities
+	implementation("com.google.code.gson:gson")
+
+	// Development tools
+	developmentOnly("org.springframework.boot:spring-boot-devtools")
+	developmentOnly("org.springframework.boot:spring-boot-docker-compose")
+
+	// Testing dependencies
+	testImplementation("org.springframework.boot:spring-boot-starter-test") {
+		exclude(group = "org.junit.vintage") // Exclude JUnit 4 support if not needed
+	}
+	testImplementation("org.junit.jupiter:junit-jupiter:5.10.0") // Unified JUnit 5 version
+	testImplementation("org.jetbrains.kotlin:kotlin-test") // Kotlin test utilities
+	testImplementation("org.mockito.kotlin:mockito-kotlin:4.1.0") // Latest Mockito Kotlin
+	testImplementation("org.mockito:mockito-core:4.11.0") // Latest Mockito Core
+	testImplementation("com.h2database:h2:2.1.214") // In-memory database for tests
+
+	// Optional runtime dependencies for tests
+	testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.10.0") // Ensure platform compatibility
+	testRuntimeOnly("com.h2database:h2:2.1.214") // H2 runtime for testing
 }
 
 val springDataSourceUrl: String = System.getenv("SPRING_DATASOURCE_URL") ?: "jdbc:postgresql://localhost:5432/demo_db"

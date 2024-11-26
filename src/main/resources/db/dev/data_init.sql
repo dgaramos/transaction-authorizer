@@ -1,4 +1,7 @@
--- Clear existing data to avoid duplicates and ensure consistent state
+-- ############################
+-- Database Initialization and Data Seeding Script
+-- ############################
+
 TRUNCATE TABLE card_transaction RESTART IDENTITY CASCADE;
 TRUNCATE TABLE account_balance RESTART IDENTITY CASCADE;
 TRUNCATE TABLE account RESTART IDENTITY CASCADE;
@@ -6,29 +9,29 @@ TRUNCATE TABLE account RESTART IDENTITY CASCADE;
 -- ############################
 -- Step 1: Insert Accounts
 -- ############################
-INSERT INTO account (name) VALUES
-    ('John Doe'),
-    ('Jane Smith'),
-    ('Carlos Silva');
+INSERT INTO account (name, version) VALUES
+    ('John Doe', 1),
+    ('Jane Smith', 1),
+    ('Carlos Silva', 1);
 
 -- ############################
 -- Step 2: Insert Account Balances
 -- ############################
 
-INSERT INTO account_balance (account_id, account_balance_type, amount) VALUES
-    (1, 'FOOD', 150.00),
-    (1, 'MEAL', 200.00),
-    (1, 'CASH', 500.00);
+INSERT INTO account_balance (account_id, account_balance_type, amount, version) VALUES
+    (1, 'FOOD', 150.00, 1),
+    (1, 'MEAL', 200.00, 1),
+    (1, 'CASH', 500.00, 1);
 
-INSERT INTO account_balance (account_id, account_balance_type, amount) VALUES
-    (2, 'FOOD', 150.00),
-    (2, 'MEAL', 200.00),
-    (2, 'CASH', 500.00);
+INSERT INTO account_balance (account_id, account_balance_type, amount, version) VALUES
+    (2, 'FOOD', 150.00, 1),
+    (2, 'MEAL', 200.00, 1),
+    (2, 'CASH', 500.00, 1);
 
-INSERT INTO account_balance (account_id, account_balance_type, amount) VALUES
-    (3, 'FOOD', 150.00),
-    (3, 'MEAL', 200.00),
-    (3, 'CASH', 500.00);
+INSERT INTO account_balance (account_id, account_balance_type, amount, version) VALUES
+    (3, 'FOOD', 150.00, 1),
+    (3, 'MEAL', 200.00, 1),
+    (3, 'CASH', 500.00, 1);
 
 -- ############################
 -- Step 3: Insert Card Transactions
@@ -70,14 +73,15 @@ BEGIN
             ORDER BY random() LIMIT 1;
 
             INSERT INTO card_transaction (
-                account, mcc, total_amount, account_balance_id, card_transaction_status, merchant
+                account, mcc, total_amount, account_balance_id, card_transaction_status, merchant, version
             ) VALUES (
                 acc_id::VARCHAR, -- Account ID as string
                 mcc_code,        -- MCC Code
                 amount,          -- Transaction Amount
                 balance_id,      -- Account Balance ID
                 status,          -- Transaction Status
-                merchant         -- Merchant Name
+                merchant,        -- Merchant Name
+                1                -- Version
             );
         END LOOP;
     END LOOP;
@@ -87,7 +91,8 @@ END $$;
 -- Step 4: Verify Data (Optional)
 -- ############################
 
--- Count records in each table
 SELECT 'Accounts Count:' AS label, COUNT(*) AS total FROM account;
 SELECT 'Account Balances Count:' AS label, COUNT(*) AS total FROM account_balance;
 SELECT 'Card Transactions Count:' AS label, COUNT(*) AS total FROM card_transaction;
+
+SELECT * FROM card_transaction LIMIT 10;

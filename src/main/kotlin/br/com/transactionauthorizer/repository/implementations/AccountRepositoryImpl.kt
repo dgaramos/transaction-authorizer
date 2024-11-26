@@ -1,56 +1,42 @@
 package br.com.transactionauthorizer.repository.implementations
 
-import br.com.transactionauthorizer.exceptions.AccountBalanceNotFoundByAccountIdAndTypeException
 import br.com.transactionauthorizer.exceptions.AccountNotFoundByIdException
 import br.com.transactionauthorizer.model.Account
 import br.com.transactionauthorizer.model.table.AccountTable
 import br.com.transactionauthorizer.repository.AccountRepository
+import br.com.transactionauthorizer.repository.BaseRepository
 import org.jetbrains.exposed.sql.insertAndGetId
-import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.selectAll
-import org.jetbrains.exposed.sql.transactions.transaction
 import org.springframework.stereotype.Repository
 
 @Repository
-class AccountRepositoryImpl : AccountRepository {
+class AccountRepositoryImpl : AccountRepository, BaseRepository<Account, AccountTable>(AccountTable, { row ->
+    Account(
+        id = row[AccountTable.id].value,
+        name = row[AccountTable.name],
+        version = row[AccountTable.version],
+        createdAt = row[AccountTable.createdAt],
+        updatedAt = row[AccountTable.updatedAt]
+    )
+}) {
 
     override fun getAllAccounts(): List<Account> {
-        return transaction {
-            AccountTable.selectAll().map {
-                buildAccount(
-                    id = it[AccountTable.id].value,
-                    name = it[AccountTable.name]
-                )
-            }
-        }
+        return super.findAll()
     }
 
     override fun getAccountById(id: Long): Account {
-        return transaction {
-            AccountTable
-                .select { AccountTable.id eq id }
-                .mapNotNull {
-                    buildAccount(
-                        id = it[AccountTable.id].value,
-                        name = it[AccountTable.name]
-                    )
-                }
-                .singleOrNull()
-        } ?: throw AccountNotFoundByIdException(id)
-    }
-    override fun createAccount(name: String): Account {
-        return transaction {
-            val id = AccountTable
-                .insertAndGetId {
-                    it[AccountTable.name] = name
-                }.value
-
-            buildAccount(id, name)
-        }
+        return super.findById(id) ?: throw AccountNotFoundByIdException(id)
     }
 
-    private fun buildAccount(id: Long, name: String) = Account(
-        id = id,
-        name = name
-    )
+     override fun createAccount(account: Account): Account {
+         return super.create(account, ::buildAccountTable)
+    }
+
+    private fun buildAccountTable(account: Account): Long {
+        return AccountTable.insertAndGetId {
+            it[name] = account.name
+            it[AccountTable.version] = account.version
+            it[AccountTable.createdAt] = account.createdAt
+            it[AccountTable.updatedAt] = account.updatedAt
+        }.value
+    }
 }

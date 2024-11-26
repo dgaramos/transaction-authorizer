@@ -69,6 +69,7 @@ class AccountBalanceControllerTest {
         val accountBalance = TestModelFactory.buildAccountBalance(balanceId, 123L, AccountBalanceType.CASH, BigDecimal(100))
         val transactions =
             TestModelFactory.buildCardTransaction(
+                id = 1L,
                 accountBalanceId = balanceId,
                 totalAmount = BigDecimal(50),
                 cardTransactionStatus = CardTransactionStatus.APPROVED
