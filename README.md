@@ -126,7 +126,6 @@ For more detailed instructions on using Swagger and exporting to Postman, see th
 
 ## Folder Structure
 
-- `docker/`: Contains the `docker-compose.yaml` file for managing Docker services.
 - `src/`: Contains the source code of the Spring Boot application.
 - `run-transaction-authorizer.sh`: The automation script for building and running the application.
 - `build.gradle`: The Gradle build file for the project.
