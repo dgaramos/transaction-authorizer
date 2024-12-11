@@ -6,7 +6,7 @@ import br.com.transactionauthorizer.controller.model.response.AccountResponse
 import org.springframework.http.ResponseEntity
 
 interface ManageAccountService {
-    fun getAllAccounts(): ResponseEntity<List<AccountListResponse>>
+    fun getAllAccounts(offset: Int = 0, limit: Int = 10): ResponseEntity<List<AccountListResponse>>
     fun getAccountById(id: Long): ResponseEntity<AccountResponse>
     fun createAccount(accountRequest: AccountRequest): ResponseEntity<AccountResponse>
 }

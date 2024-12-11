@@ -13,8 +13,8 @@ class AccountServiceImpl(private val accountRepository: AccountRepository) : Acc
         return accountRepository.createAccount(account)
     }
 
-    override fun getAllAccounts(): List<Account> {
-        return accountRepository.getAllAccounts()
+    override fun getAllAccounts(offset: Int, limit: Int): List<Account> {
+        return accountRepository.getAllAccounts(offset, limit)
     }
 
     override fun getAccountById(id: Long): Account {

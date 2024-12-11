@@ -67,6 +67,9 @@ class TestRepository : BaseRepository<TestModel, TestTable>(
 
     fun findTestById(id: Long) =
         super.findById(id)
+
+    fun findAllTests(offset: Int = 0, limit: Int = 10) =
+        super.findAll(offset, limit)
 }
 
 @ActiveProfiles("test")
@@ -126,6 +129,40 @@ class BaseRepositoryIntegrationTest {
         assertNotNull(foundAccount)
         assertEquals(createdTest.id, foundAccount?.id)
         assertEquals(createdTest.name, foundAccount?.name)
+    }
+
+    @Test
+    fun `should retrieve entities with pagination`() {
+        val entities = listOf(
+            TestModel(name = "Entity 1"),
+            TestModel(name = "Entity 2"),
+            TestModel(name = "Entity 3"),
+            TestModel(name = "Entity 4"),
+            TestModel(name = "Entity 5")
+        )
+
+        entities.forEach { testRepository.createTest(it) }
+
+        // First page
+        val page1 = testRepository.findAllTests(offset = 0, limit = 2)
+        assertEquals(2, page1.size)
+        assertEquals("Entity 1", page1[0].name)
+        assertEquals("Entity 2", page1[1].name)
+
+        // Second page
+        val page2 = testRepository.findAllTests(offset = 2, limit = 2)
+        assertEquals(2, page2.size)
+        assertEquals("Entity 3", page2[0].name)
+        assertEquals("Entity 4", page2[1].name)
+
+        // Third page
+        val page3 = testRepository.findAllTests(offset = 4, limit = 2)
+        assertEquals(1, page3.size)
+        assertEquals("Entity 5", page3[0].name)
+
+        // Fourth page (empty)
+        val emptyPage = testRepository.findAllTests(offset = 6, limit = 2)
+        assertTrue(emptyPage.isEmpty())
     }
 
     companion object {

@@ -19,8 +19,8 @@ class AccountRepositoryImpl : AccountRepository, BaseRepository<Account, Account
     )
 }) {
 
-    override fun getAllAccounts(): List<Account> {
-        return super.findAll()
+    override fun getAllAccounts(offset: Int, limit: Int): List<Account> {
+        return super.findAll(offset, limit)
     }
 
     override fun getAccountById(id: Long): Account {

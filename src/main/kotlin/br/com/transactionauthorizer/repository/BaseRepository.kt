@@ -14,10 +14,11 @@ abstract class BaseRepository<T : BaseModel, U : BaseTable<Long>>(
     private val table: U,
     private val toModel: (ResultRow) -> T
 ) {
-    fun findAll(): List<T> = transaction {
-        table.selectAll().map {
-            toModel(it)
-        }
+    fun findAll(offset: Int = 0, limit: Int = 10): List<T> = transaction {
+        table.selectAll().limit(n = limit, offset = offset.toLong())
+            .map {
+                toModel(it)
+            }
     }
 
     fun findById(id: Long): T? = transaction {

@@ -3,7 +3,7 @@ package br.com.transactionauthorizer.controller
 import br.com.transactionauthorizer.controller.model.request.AccountRequest
 import br.com.transactionauthorizer.controller.model.response.AccountListResponse
 import br.com.transactionauthorizer.controller.model.response.AccountResponse
-import br.com.transactionauthorizer.service.implementations.ManageAccountServiceImpl
+import br.com.transactionauthorizer.service.ManageAccountService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -15,13 +15,19 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/api/accounts")
 @CrossOrigin(maxAge = 3600)
 class AccountController(
-    private val manageAccountService: ManageAccountServiceImpl
+    private val manageAccountService: ManageAccountService
 ) {
 
     @Operation(summary = "Get all accounts")
     @GetMapping("", produces = ["application/json"])
-    fun getAllAccounts(): ResponseEntity<List<AccountListResponse>> {
-        return manageAccountService.getAllAccounts()
+    fun getAllAccounts(
+        @RequestParam offset: Int = 0,
+        @RequestParam limit: Int = 10
+    ): ResponseEntity<List<AccountListResponse>> {
+        return manageAccountService.getAllAccounts(
+            offset = offset,
+            limit = limit
+        )
     }
 
     @Operation(summary = "Get a specific account by ID with all account balances")

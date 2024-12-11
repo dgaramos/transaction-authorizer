@@ -3,71 +3,94 @@ package br.com.transactionauthorizer.controller
 import br.com.transactionauthorizer.controller.model.request.AccountRequest
 import br.com.transactionauthorizer.controller.model.response.AccountListResponse
 import br.com.transactionauthorizer.controller.model.response.AccountResponse
-import br.com.transactionauthorizer.service.implementations.ManageAccountServiceImpl
-import org.junit.jupiter.api.Assertions.assertEquals
+import br.com.transactionauthorizer.service.ManageAccountService
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.*
+import org.mockito.InjectMocks
+import org.mockito.Mock
+import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.whenever
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers
+import org.springframework.test.web.servlet.setup.MockMvcBuilders
+import java.util.*
 
 class AccountControllerTest {
 
-    private lateinit var manageAccountService: ManageAccountServiceImpl
+    @InjectMocks
     private lateinit var accountController: AccountController
 
+    @Mock
+    private lateinit var manageAccountService: ManageAccountService
+
+    private lateinit var mockMvc: MockMvc
+    private val objectMapper = ObjectMapper()
+
     @BeforeEach
-    fun setUp() {
-        manageAccountService = mock()
-        accountController = AccountController(manageAccountService)
+    fun setup() {
+        MockitoAnnotations.openMocks(this)
+        mockMvc = MockMvcBuilders.standaloneSetup(accountController).build()
     }
 
     @Test
-    fun `should retrieve all accounts`() {
-        val accounts = listOf(
-            AccountListResponse(id = 1L, name = "Account 1"),
-            AccountListResponse(id = 2L, name = "Account 2")
+    fun `test get all accounts`() {
+        val accountListResponse = listOf(
+            AccountListResponse(id = 1L, name = "Account1"),
+            AccountListResponse(id = 2L, name = "Account2")
         )
-        whenever(manageAccountService.getAllAccounts()).thenReturn(ResponseEntity(accounts, HttpStatus.OK))
 
-        val response = accountController.getAllAccounts()
+        whenever(manageAccountService.getAllAccounts(0, 10))
+            .thenReturn(ResponseEntity.ok(accountListResponse))
 
-        assertEquals(HttpStatus.OK, response.statusCode)
-        assertEquals(2, response.body?.size)
-        verify(manageAccountService, times(1)).getAllAccounts()
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/accounts?offset=0&limit=10"))
+            .andExpect(MockMvcResultMatchers.status().isOk)
+            .andExpect(MockMvcResultMatchers.jsonPath("$.length()").value(2))
+            .andExpect(MockMvcResultMatchers.jsonPath("$[0].name").value("Account1"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$[1].name").value("Account2"))
     }
 
     @Test
-    fun `should retrieve account by ID`() {
-        val accountId = 1L
-        val accountResponse = AccountResponse(
-            id = accountId,
-            name = "Account 1",
-            balances = emptyList()
-        )
-        whenever(manageAccountService.getAccountById(accountId)).thenReturn(ResponseEntity(accountResponse, HttpStatus.OK))
-
-        val response = accountController.getAccountById(accountId)
-
-        assertEquals(HttpStatus.OK, response.statusCode)
-        assertEquals("Account 1", response.body?.name)
-        verify(manageAccountService, times(1)).getAccountById(accountId)
-    }
-
-    @Test
-    fun `should create a new account`() {
-        val accountRequest = AccountRequest(name = "New Account")
+    fun `test get account by ID`() {
         val accountResponse = AccountResponse(
             id = 1L,
-            name = "New Account",
-            balances = emptyList()
+            name = "Account1",
+            balances = listOf()
         )
-        whenever(manageAccountService.createAccount(accountRequest)).thenReturn(ResponseEntity(accountResponse, HttpStatus.CREATED))
 
-        val response = accountController.createAccount(accountRequest)
+        whenever(manageAccountService.getAccountById(1L))
+            .thenReturn(ResponseEntity.ok(accountResponse))
 
-        assertEquals(HttpStatus.CREATED, response.statusCode)
-        assertEquals("New Account", response.body?.name)
-        verify(manageAccountService, times(1)).createAccount(accountRequest)
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/accounts/1"))
+            .andExpect(MockMvcResultMatchers.status().isOk)
+            .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(1))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Account1"))
+    }
+
+    @Test
+    fun `test create account`() {
+        val accountRequest = AccountRequest(name = "NewAccount")
+        val accountResponse = AccountResponse(
+            id = 1L,
+            name = "NewAccount",
+            balances = listOf()
+        )
+
+        whenever(manageAccountService.createAccount(accountRequest))
+            .thenReturn(ResponseEntity.status(HttpStatus.CREATED).body(accountResponse))
+
+        val jsonRequest = objectMapper.writeValueAsString(accountRequest)
+
+        mockMvc.perform(
+            MockMvcRequestBuilders.post("/api/accounts")
+                .contentType("application/json")
+                .content(jsonRequest)
+        )
+            .andExpect(MockMvcResultMatchers.status().isCreated)
+            .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(1))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("NewAccount"))
     }
 }

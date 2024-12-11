@@ -26,16 +26,16 @@ class AccountServiceImplTest {
         val account1 = TestModelFactory.buildAccount(id = 1L, name = "Account 1")
         val account2 = TestModelFactory.buildAccount(id = 2L, name = "Account 2")
 
-        whenever(accountRepository.getAllAccounts()).thenReturn(listOf(account1, account2))
+        whenever(accountRepository.getAllAccounts(offset = 0, limit = 2)).thenReturn(listOf(account1, account2))
 
-        val accounts = accountService.getAllAccounts()
+        val accounts = accountService.getAllAccounts(offset = 0, limit = 2)
 
         Assertions.assertNotNull(accounts)
         Assertions.assertEquals(2, accounts.size)
         Assertions.assertEquals("Account 1", accounts[0].name)
         Assertions.assertEquals("Account 2", accounts[1].name)
 
-        verify(accountRepository).getAllAccounts()
+        verify(accountRepository).getAllAccounts(offset = 0, limit = 2)
     }
 
     @Test

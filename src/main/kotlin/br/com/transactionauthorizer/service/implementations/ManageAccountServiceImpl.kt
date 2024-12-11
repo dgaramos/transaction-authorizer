@@ -17,8 +17,8 @@ class ManageAccountServiceImpl(
     private val accountBalanceService: AccountBalanceService
 ): ManageAccountService {
 
-    override fun getAllAccounts(): ResponseEntity<List<AccountListResponse>> {
-        val response = accountService.getAllAccounts().map { account ->
+    override fun getAllAccounts(offset: Int, limit: Int): ResponseEntity<List<AccountListResponse>> {
+        val response = accountService.getAllAccounts(offset, limit).map { account ->
             AccountListResponse.fromAccount(account)
         }
         return ResponseEntity(response, HttpStatus.OK)

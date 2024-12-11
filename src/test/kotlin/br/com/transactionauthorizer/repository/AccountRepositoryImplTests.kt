@@ -3,13 +3,14 @@ package br.com.transactionauthorizer.repository
 import br.com.transactionauthorizer.exceptions.AccountNotFoundByIdException
 import br.com.transactionauthorizer.factory.TestModelFactory
 import br.com.transactionauthorizer.factory.TestTableFactory
-import br.com.transactionauthorizer.model.Account
 import br.com.transactionauthorizer.model.table.AccountTable
 import br.com.transactionauthorizer.repository.implementations.AccountRepositoryImpl
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AccountRepositoryImplTest {
@@ -43,21 +44,22 @@ class AccountRepositoryImplTest {
 
         val createdAccount = repository.createAccount(account)
 
-        Assertions.assertNotNull(createdAccount)
-        Assertions.assertEquals(account, createdAccount)
+        assertNotNull(createdAccount)
+        assertEquals(account, createdAccount)
     }
 
     @Test
-    fun `test get all accounts`() {
+    fun `test get all accounts with pagination`() {
         val accountsToCreate = listOf("Account 1", "Account 2", "Account 3")
         accountsToCreate.forEach {
             TestTableFactory.createAccount(name = it)
         }
 
-        val accounts = repository.getAllAccounts()
+        val firstPage = repository.getAllAccounts(offset = 0, limit = 2)
+        val secondPage = repository.getAllAccounts(offset = 2, limit = 2)
 
-        Assertions.assertEquals(accountsToCreate.size, accounts.size)
-        Assertions.assertTrue(accounts.map(Account::name).containsAll(accountsToCreate))
+        assertEquals(2, firstPage.size)
+        assertEquals(1, secondPage.size)
     }
 
     @Test
@@ -67,9 +69,9 @@ class AccountRepositoryImplTest {
 
         val retrievedAccount = repository.getAccountById(accountId)
 
-        Assertions.assertNotNull(retrievedAccount)
-        Assertions.assertEquals(accountId, retrievedAccount.id)
-        Assertions.assertEquals(name, retrievedAccount.name)
+        assertNotNull(retrievedAccount)
+        assertEquals(accountId, retrievedAccount.id)
+        assertEquals(name, retrievedAccount.name)
     }
 
     @Test
@@ -78,7 +80,7 @@ class AccountRepositoryImplTest {
             repository.getAccountById(999L)
         }
 
-        Assertions.assertEquals("Account with accountId 999 not found.", exception.message)
+        assertEquals("Account with accountId 999 not found.", exception.message)
     }
 
 }
