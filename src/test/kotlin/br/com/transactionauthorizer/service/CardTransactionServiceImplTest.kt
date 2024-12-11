@@ -58,18 +58,19 @@ class CardTransactionServiceImplTest {
     @Test
     fun `should find a transaction by account balance Id`() {
         val accountBalanceId = 1L
-
+        val offset = 0
+        val limit = 10
         val cardTransactions = listOf(
             TestModelFactory.buildCardTransaction(
                 accountBalanceId = accountBalanceId,
             )
         )
 
-        whenever(cardTransactionRepository.getAllTransactionsByAccountBalanceId(accountBalanceId)).thenReturn(cardTransactions)
+        whenever(cardTransactionRepository.getAllTransactionsByAccountBalanceId(accountBalanceId, offset, limit)).thenReturn(cardTransactions)
 
-        val result = cardTransactionService.getAllTransactionsByAccountBalanceId(accountBalanceId)
+        val result = cardTransactionService.getAllTransactionsByAccountBalanceId(accountBalanceId, offset, limit)
 
-        verify(cardTransactionRepository, times(1)).getAllTransactionsByAccountBalanceId(accountBalanceId = accountBalanceId)
+        verify(cardTransactionRepository, times(1)).getAllTransactionsByAccountBalanceId(accountBalanceId = accountBalanceId, offset = offset, limit = limit)
 
         Assertions.assertEquals(cardTransactions, result)
     }

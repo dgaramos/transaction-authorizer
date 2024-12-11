@@ -6,9 +6,9 @@ import java.math.BigDecimal
 
 interface CardTransactionRepository {
 
-    fun getAllTransactionsByAccountId(account: String): List<CardTransaction>
+    fun getAllTransactionsByAccountId(account: String, offset: Int = 0, limit: Int = 10): List<CardTransaction>
 
-    fun getAllTransactionsByAccountBalanceId(accountBalanceId: Long): List<CardTransaction>
+    fun getAllTransactionsByAccountBalanceId(accountBalanceId: Long, offset: Int = 0, limit: Int = 10): List<CardTransaction>
 
     fun createTransaction(
         account: String,

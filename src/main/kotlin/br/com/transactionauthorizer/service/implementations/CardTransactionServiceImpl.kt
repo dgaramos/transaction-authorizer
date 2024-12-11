@@ -12,8 +12,8 @@ class CardTransactionServiceImpl(
     private val cardTransactionRepository: CardTransactionRepository
 ) : CardTransactionService {
 
-    override fun getAllTransactionsByAccountBalanceId(accountBalanceId: Long) =
-        cardTransactionRepository.getAllTransactionsByAccountBalanceId(accountBalanceId)
+    override fun getAllTransactionsByAccountBalanceId(accountBalanceId: Long, offset: Int, limit: Int) =
+        cardTransactionRepository.getAllTransactionsByAccountBalanceId(accountBalanceId, offset, limit)
 
     override fun createTransaction(
         account: String,

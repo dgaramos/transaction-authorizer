@@ -2,13 +2,10 @@ package br.com.transactionauthorizer.repository.implementations
 
 import br.com.transactionauthorizer.model.CardTransaction
 import br.com.transactionauthorizer.model.CardTransactionStatus
-import br.com.transactionauthorizer.model.table.AccountTable
 import br.com.transactionauthorizer.model.table.CardTransactionTable
 import br.com.transactionauthorizer.repository.BaseRepository
 import br.com.transactionauthorizer.repository.CardTransactionRepository
-import org.jetbrains.exposed.sql.ResultRow
-import org.jetbrains.exposed.sql.insertAndGetId
-import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.springframework.stereotype.Repository
 import java.math.BigDecimal
@@ -30,18 +27,24 @@ class CardTransactionRepositoryImpl : CardTransactionRepository, BaseRepository<
     )
 }) {
 
-    override fun getAllTransactionsByAccountId(account: String): List<CardTransaction> {
+    override fun getAllTransactionsByAccountId(account: String, offset: Int, limit: Int): List<CardTransaction> {
         return transaction {
-            CardTransactionTable.selectAll().where { CardTransactionTable.account eq account }
+            CardTransactionTable
+                .selectAll().where { CardTransactionTable.account eq account }
+                .limit(n = limit, offset = offset.toLong())
+                .orderBy(CardTransactionTable.createdAt, SortOrder.DESC)
                 .map {
                     mapToCardTransaction(it)
                 }
         }
     }
 
-    override fun getAllTransactionsByAccountBalanceId(accountBalanceId: Long): List<CardTransaction> {
+    override fun getAllTransactionsByAccountBalanceId(accountBalanceId: Long, offset: Int, limit: Int): List<CardTransaction> {
         return transaction {
-            CardTransactionTable.selectAll().where { CardTransactionTable.accountBalanceId eq accountBalanceId }
+            CardTransactionTable
+                .selectAll().where { CardTransactionTable.accountBalanceId eq accountBalanceId }
+                .limit(n = limit, offset = offset.toLong())
+                .orderBy(CardTransactionTable.createdAt, SortOrder.DESC)
                 .map {
                     mapToCardTransaction(it)
                 }

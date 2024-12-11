@@ -37,10 +37,16 @@ class AccountBalanceController(
     @Operation(summary = "Get account balance info and its transactions")
     @GetMapping("/{id}", produces = ["application/json"])
     fun getAccountBalance(
-        @Parameter(description = "ID of the account balance to retrieve") @PathVariable id: Long
+        @Parameter(description = "ID of the account balance to retrieve") @PathVariable id: Long,
+        @Parameter(description = "Offset of the transaction pagination") @RequestParam transactionOffset: Int = 0,
+        @Parameter(description = "Limit of the transaction pagination") @RequestParam transactionLimit: Int = 10
     ): ResponseEntity<AccountBalanceCreatedResponse> {
         val response = accountBalanceService.getAccountBalanceById(id).let { balance ->
-            cardTransactionService.getAllTransactionsByAccountBalanceId(balance.id!!).let { transactions ->
+            cardTransactionService.getAllTransactionsByAccountBalanceId(
+                accountBalanceId = balance.id!!,
+                offset = transactionOffset,
+                limit = transactionLimit
+            ).let { transactions ->
                 AccountBalanceCreatedResponse.fromAccountBalance(balance, transactions)
             }
         }

@@ -5,10 +5,12 @@ import br.com.transactionauthorizer.model.BaseModel
 import br.com.transactionauthorizer.model.table.BaseTable
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.deleteAll
 import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -79,6 +81,13 @@ class BaseRepositoryIntegrationTest {
 
     @Autowired
     lateinit var testRepository: TestRepository
+
+    @BeforeEach
+    fun cleanup() {
+        transaction {
+            TestTable.deleteAll()
+        }
+    }
 
     @Test
     fun `should create an entity`() {

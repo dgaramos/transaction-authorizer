@@ -66,6 +66,8 @@ class AccountBalanceControllerTest {
     @Test
     fun `test get account balance`() {
         val balanceId = 1L
+        val offset = 0
+        val limit = 10
         val accountBalance = TestModelFactory.buildAccountBalance(balanceId, 123L, AccountBalanceType.CASH, BigDecimal(100))
         val transactions =
             TestModelFactory.buildCardTransaction(
@@ -77,10 +79,10 @@ class AccountBalanceControllerTest {
 
         whenever(accountBalanceService.getAccountBalanceById(balanceId))
             .thenReturn(accountBalance)
-        whenever(cardTransactionService.getAllTransactionsByAccountBalanceId(balanceId))
+        whenever(cardTransactionService.getAllTransactionsByAccountBalanceId(balanceId, offset, limit))
             .thenReturn(listOf(transactions))
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/account-balances/$balanceId"))
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/account-balances/$balanceId?transactionOffset=$offset&transactionLimit=$limit"))
             .andExpect(MockMvcResultMatchers.status().isOk)
             .andExpect(MockMvcResultMatchers.jsonPath("$.accountId").value(123L))
             .andExpect(MockMvcResultMatchers.jsonPath("$.type").value("CASH"))
@@ -91,6 +93,6 @@ class AccountBalanceControllerTest {
         verify(accountBalanceService, times(1))
             .getAccountBalanceById(balanceId)
         verify(cardTransactionService, times(1))
-            .getAllTransactionsByAccountBalanceId(balanceId)
+            .getAllTransactionsByAccountBalanceId(balanceId, offset, limit)
     }
 }

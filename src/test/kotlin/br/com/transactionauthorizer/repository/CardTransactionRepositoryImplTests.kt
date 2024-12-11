@@ -53,7 +53,7 @@ class CardTransactionRepositoryImplTests {
             merchant = merchant
         )
 
-        val retrievedTransactions = cardTransactionRepository.getAllTransactionsByAccountId(account)
+        val retrievedTransactions = cardTransactionRepository.getAllTransactionsByAccountId(account, 0, 10)
 
         assertNotNull(retrievedTransactions)
         assertEquals(1, retrievedTransactions.size)
@@ -61,48 +61,95 @@ class CardTransactionRepositoryImplTests {
     }
 
     @Test
-    fun `should return all transactions by account Id`() {
+    fun `should return all transactions by account Id with descending order`() {
+        val account = "1234567890"
         TestTableFactory.createCardTransaction(
-            account = "1234567890",
+            account = account,
             totalAmount = BigDecimal(100.00),
             mcc = "5811",
             cardTransactionStatus = CardTransactionStatus.APPROVED,
-            merchant = "PADARIA DO ZE - SAO PAULO BR"
+            merchant = "Merchant A"
         )
         TestTableFactory.createCardTransaction(
-            account = "9876543210",
+            account = account,
             totalAmount = BigDecimal(200.00),
             mcc = "5411",
             cardTransactionStatus = CardTransactionStatus.DENIED,
-            merchant = "SUPERMERCADO ALVORADA - SÃO PAULO BR"
+            merchant = "Merchant B"
         )
 
-        val transactions = cardTransactionRepository.getAllTransactionsByAccountId("9876543210")
+        val transactions = cardTransactionRepository.getAllTransactionsByAccountId(account, 0, 10)
 
-        assertEquals(1, transactions.size)
+        assertEquals(2, transactions.size)
+        assertTrue(transactions[0].createdAt > transactions[1].createdAt)
     }
 
     @Test
-    fun `should return all transactions by account balance Id`() {
+    fun `should paginate transactions by account Id`() {
+        val account = "1234567890"
+        repeat(15) {
+            TestTableFactory.createCardTransaction(
+                account = account,
+                totalAmount = BigDecimal(100 + it),
+                mcc = "581${it % 10}",
+                cardTransactionStatus = CardTransactionStatus.APPROVED,
+                merchant = "Merchant $it"
+            )
+        }
+
+        val transactionsPage1 = cardTransactionRepository.getAllTransactionsByAccountId(account, 0, 5)
+        val transactionsPage2 = cardTransactionRepository.getAllTransactionsByAccountId(account, 5, 5)
+
+        assertEquals(5, transactionsPage1.size)
+        assertEquals(5, transactionsPage2.size)
+        assertNotEquals(transactionsPage1.first().id, transactionsPage2.first().id)
+    }
+
+    @Test
+    fun `should return all transactions by account balance Id with descending order`() {
+        val accountBalanceId = 12L
         TestTableFactory.createCardTransaction(
             account = "1234567890",
             totalAmount = BigDecimal(100.00),
             mcc = "5811",
-            accountBalanceId = 12L,
+            accountBalanceId = accountBalanceId,
             cardTransactionStatus = CardTransactionStatus.APPROVED,
-            merchant = "PADARIA DO ZE - SAO PAULO BR"
+            merchant = "Merchant A"
         )
         TestTableFactory.createCardTransaction(
-            account = "9876543210",
+            account = "1234567890",
             totalAmount = BigDecimal(200.00),
             mcc = "5411",
-            accountBalanceId = 24L,
+            accountBalanceId = accountBalanceId,
             cardTransactionStatus = CardTransactionStatus.DENIED,
-            merchant = "SUPERMERCADO ALVORADA - SÃO PAULO BR"
+            merchant = "Merchant B"
         )
 
-        val transactions = cardTransactionRepository.getAllTransactionsByAccountBalanceId(12L)
+        val transactions = cardTransactionRepository.getAllTransactionsByAccountBalanceId(accountBalanceId, 0, 10)
 
-        assertEquals(1, transactions.size)
+        assertEquals(2, transactions.size)
+        assertTrue(transactions[0].createdAt > transactions[1].createdAt)
+    }
+
+    @Test
+    fun `should paginate transactions by account balance Id`() {
+        val accountBalanceId = 12L
+        repeat(15) {
+            TestTableFactory.createCardTransaction(
+                account = "1234567890",
+                totalAmount = BigDecimal(100 + it),
+                mcc = "581${it % 10}",
+                accountBalanceId = accountBalanceId,
+                cardTransactionStatus = CardTransactionStatus.APPROVED,
+                merchant = "Merchant $it"
+            )
+        }
+
+        val transactionsPage1 = cardTransactionRepository.getAllTransactionsByAccountBalanceId(accountBalanceId, 0, 5)
+        val transactionsPage2 = cardTransactionRepository.getAllTransactionsByAccountBalanceId(accountBalanceId, 5, 5)
+
+        assertEquals(5, transactionsPage1.size)
+        assertEquals(5, transactionsPage2.size)
+        assertNotEquals(transactionsPage1.first().id, transactionsPage2.first().id)
     }
 }
