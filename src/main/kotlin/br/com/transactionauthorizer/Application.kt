@@ -15,8 +15,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement
 		title = "Transaction Authorizer API",
 		version = "1.0.0",
 		description = """
-			This API is part of a take-home test for the Senior Software Engineer position at Caju Beneficios. 
-			It is responsible for authorizing transactions based on a set of business rules and integrates with a PostgreSQL database to store and process transaction data. 
+			This API is responsible for authorizing transactions based on a set of business rules and integrates with a PostgreSQL database to store and process transaction data. 
 			The system provides a REST API for transaction authorization, enabling seamless interaction with external services.
 		""",
 		contact = Contact(

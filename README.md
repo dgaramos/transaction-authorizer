@@ -1,12 +1,9 @@
 # Transaction Authorizer
 
-![Caju Beneficios Logo](https://cdn.prod.website-files.com/620135165cdb9f1d60b5d1e3/6244d22a2b78fe6d97518ce9_logo-rodape.svg)
+This is an example **transaction authorization system** that validates and stores pseudo credit card transactions of a benefit club which has various types of balances (FOOD, MEAL, etc.) and has a miscellaneous type of balance for other types of transactions (CASH).
 
-This project is part of a take-home test for the **Senior Software Engineer** position at **Caju Beneficios**. The objective is to implement a **transaction authorization system** that validates and stores transactions based on predefined business rules. The system integrates with a **PostgreSQL database** for persistence and exposes a **REST API** for external interaction. All available endpoints can be found in the [**Swagger** documentation](#swagger-documentation).
+The system integrates with a **PostgreSQL database** for persistence and exposes a **REST API** for external interaction. All available endpoints can be found in the [**Swagger** documentation](#swagger-documentation).
 
-For further details about the challenge, please refer to the [official document](https://caju.notion.site/Desafio-T-cnico-para-fazer-em-casa-218d49808fe14a4189c3ca664857de72).
-
-> **DISCLAIMER:** For the [L4 Answer](docs/L4_ANSWER.md), access [this link](docs/L4_ANSWER.md). It contains a brief explanation of the architecture of this API and describes how to use Optimistic Locking to solve potential concurrency issues. It is in portuguese.
 
 ---
 
