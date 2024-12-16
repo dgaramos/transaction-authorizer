@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.*
 import java.math.BigDecimal
+import java.util.*
 
 class CardTransactionServiceImplTest {
 
@@ -24,10 +25,10 @@ class CardTransactionServiceImplTest {
 
     @Test
     fun `should create a transaction`() {
-        val account = "1"
+        val account = UUID.randomUUID().toString()
+        val accountBalanceId = UUID.randomUUID()
         val totalAmount = BigDecimal(100)
         val mcc = "5411"
-        val accountBalanceId = 1L
         val cardTransactionStatus = CardTransactionStatus.APPROVED
         val merchant = "TestMerchant"
 
@@ -57,7 +58,7 @@ class CardTransactionServiceImplTest {
 
     @Test
     fun `should find a transaction by account balance Id`() {
-        val accountBalanceId = 1L
+        val accountBalanceId = UUID.randomUUID()
         val offset = 0
         val limit = 10
         val cardTransactions = listOf(

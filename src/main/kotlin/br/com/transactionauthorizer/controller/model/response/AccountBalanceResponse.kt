@@ -2,17 +2,18 @@ package br.com.transactionauthorizer.controller.model.response
 
 import br.com.transactionauthorizer.model.AccountBalance
 import br.com.transactionauthorizer.model.CardTransaction
+import java.util.UUID
 
 data class AccountBalanceResponse(
-    val id: Long,
-    val accountId: Long,
+    val id: UUID,
+    val accountId: UUID,
     val type: String,
     val amount: String
 ) {
     companion object {
         fun fromAccountBalance(accountBalance: AccountBalance): AccountBalanceResponse {
             return AccountBalanceResponse(
-                id = accountBalance.id!!,
+                id = accountBalance.id,
                 accountId = accountBalance.accountId,
                 type = accountBalance.accountBalanceType.name,
                 amount = accountBalance.amount.toString()
@@ -22,8 +23,8 @@ data class AccountBalanceResponse(
 }
 
 data class AccountBalanceCreatedResponse(
-    val id: Long,
-    val accountId: Long,
+    val id: UUID,
+    val accountId: UUID,
     val type: String,
     val amount: String,
     val transactions: List<CardTransactionResponse>
@@ -31,7 +32,7 @@ data class AccountBalanceCreatedResponse(
     companion object {
         fun fromAccountBalance(accountBalance: AccountBalance, transactions: List<CardTransaction>): AccountBalanceCreatedResponse {
             return AccountBalanceCreatedResponse(
-                id = accountBalance.id!!,
+                id = accountBalance.id,
                 accountId = accountBalance.accountId,
                 type = accountBalance.accountBalanceType.name,
                 amount = accountBalance.amount.toString(),

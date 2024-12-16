@@ -4,6 +4,7 @@ import br.com.transactionauthorizer.model.Account
 import br.com.transactionauthorizer.repository.AccountRepository
 import br.com.transactionauthorizer.service.AccountService
 import org.springframework.stereotype.Service
+import java.util.UUID
 
 @Service
 class AccountServiceImpl(private val accountRepository: AccountRepository) : AccountService {
@@ -17,7 +18,7 @@ class AccountServiceImpl(private val accountRepository: AccountRepository) : Acc
         return accountRepository.getAllAccounts(offset, limit)
     }
 
-    override fun getAccountById(id: Long): Account {
+    override fun getAccountById(id: UUID): Account {
         return accountRepository.getAccountById(id)
     }
 }

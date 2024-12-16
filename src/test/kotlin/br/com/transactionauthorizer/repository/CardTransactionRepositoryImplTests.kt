@@ -9,6 +9,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
 import java.math.BigDecimal
+import java.util.*
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CardTransactionRepositoryImplTests {
@@ -39,7 +40,7 @@ class CardTransactionRepositoryImplTests {
 
     @Test
     fun `should insert a new transaction and retrieve it`() {
-        val account = "1234567890"
+        val account = UUID.randomUUID().toString()
         val totalAmount = BigDecimal(150.00)
         val mcc = "5811"
         val cardTransactionStatus = CardTransactionStatus.APPROVED
@@ -53,7 +54,7 @@ class CardTransactionRepositoryImplTests {
             merchant = merchant
         )
 
-        val retrievedTransactions = cardTransactionRepository.getAllTransactionsByAccountId(account, 0, 10)
+        val retrievedTransactions = cardTransactionRepository.getAllTransactionsByAccountId(UUID.fromString(account), 0, 10)
 
         assertNotNull(retrievedTransactions)
         assertEquals(1, retrievedTransactions.size)
@@ -62,7 +63,7 @@ class CardTransactionRepositoryImplTests {
 
     @Test
     fun `should return all transactions by account Id with descending order`() {
-        val account = "1234567890"
+        val account = UUID.randomUUID().toString()
         TestTableFactory.createCardTransaction(
             account = account,
             totalAmount = BigDecimal(100.00),
@@ -78,7 +79,7 @@ class CardTransactionRepositoryImplTests {
             merchant = "Merchant B"
         )
 
-        val transactions = cardTransactionRepository.getAllTransactionsByAccountId(account, 0, 10)
+        val transactions = cardTransactionRepository.getAllTransactionsByAccountId(UUID.fromString(account), 0, 10)
 
         assertEquals(2, transactions.size)
         assertTrue(transactions[0].createdAt > transactions[1].createdAt)
@@ -86,7 +87,7 @@ class CardTransactionRepositoryImplTests {
 
     @Test
     fun `should paginate transactions by account Id`() {
-        val account = "1234567890"
+        val account = UUID.randomUUID().toString()
         repeat(15) {
             TestTableFactory.createCardTransaction(
                 account = account,
@@ -97,8 +98,8 @@ class CardTransactionRepositoryImplTests {
             )
         }
 
-        val transactionsPage1 = cardTransactionRepository.getAllTransactionsByAccountId(account, 0, 5)
-        val transactionsPage2 = cardTransactionRepository.getAllTransactionsByAccountId(account, 5, 5)
+        val transactionsPage1 = cardTransactionRepository.getAllTransactionsByAccountId(UUID.fromString(account), 0, 5)
+        val transactionsPage2 = cardTransactionRepository.getAllTransactionsByAccountId(UUID.fromString(account), 5, 5)
 
         assertEquals(5, transactionsPage1.size)
         assertEquals(5, transactionsPage2.size)
@@ -107,9 +108,9 @@ class CardTransactionRepositoryImplTests {
 
     @Test
     fun `should return all transactions by account balance Id with descending order`() {
-        val accountBalanceId = 12L
+        val accountBalanceId = UUID.randomUUID()
         TestTableFactory.createCardTransaction(
-            account = "1234567890",
+            account = UUID.randomUUID().toString(),
             totalAmount = BigDecimal(100.00),
             mcc = "5811",
             accountBalanceId = accountBalanceId,
@@ -117,7 +118,7 @@ class CardTransactionRepositoryImplTests {
             merchant = "Merchant A"
         )
         TestTableFactory.createCardTransaction(
-            account = "1234567890",
+            account = UUID.randomUUID().toString(),
             totalAmount = BigDecimal(200.00),
             mcc = "5411",
             accountBalanceId = accountBalanceId,
@@ -133,10 +134,10 @@ class CardTransactionRepositoryImplTests {
 
     @Test
     fun `should paginate transactions by account balance Id`() {
-        val accountBalanceId = 12L
+        val accountBalanceId = UUID.randomUUID()
         repeat(15) {
             TestTableFactory.createCardTransaction(
-                account = "1234567890",
+                account = UUID.randomUUID().toString(),
                 totalAmount = BigDecimal(100 + it),
                 mcc = "581${it % 10}",
                 accountBalanceId = accountBalanceId,

@@ -7,6 +7,7 @@ import br.com.transactionauthorizer.repository.AccountRepository
 import br.com.transactionauthorizer.repository.BaseRepository
 import org.jetbrains.exposed.sql.insertAndGetId
 import org.springframework.stereotype.Repository
+import java.util.UUID
 
 @Repository
 class AccountRepositoryImpl : AccountRepository, BaseRepository<Account, AccountTable>(AccountTable, { row ->
@@ -23,7 +24,7 @@ class AccountRepositoryImpl : AccountRepository, BaseRepository<Account, Account
         return super.findAll(offset, limit)
     }
 
-    override fun getAccountById(id: Long): Account {
+    override fun getAccountById(id: UUID): Account {
         return super.findById(id) ?: throw AccountNotFoundByIdException(id)
     }
 
@@ -31,8 +32,9 @@ class AccountRepositoryImpl : AccountRepository, BaseRepository<Account, Account
          return super.create(account, ::buildAccountTable)
     }
 
-    private fun buildAccountTable(account: Account): Long {
+    private fun buildAccountTable(account: Account): UUID {
         return AccountTable.insertAndGetId {
+            it[AccountTable.id] = account.id
             it[name] = account.name
             it[AccountTable.version] = account.version
             it[AccountTable.createdAt] = account.createdAt

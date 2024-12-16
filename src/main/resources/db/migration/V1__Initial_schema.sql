@@ -1,5 +1,5 @@
 CREATE TABLE account (
-    id BIGSERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(255) NOT NULL,
     version BIGINT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -7,8 +7,8 @@ CREATE TABLE account (
 );
 
 CREATE TABLE account_balance (
-    id BIGSERIAL PRIMARY KEY,
-    account_id BIGINT NOT NULL,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    account_id UUID NOT NULL,
     account_balance_type VARCHAR(50) NOT NULL,
     amount DECIMAL(15, 2) NOT NULL,
     version BIGINT NOT NULL,
@@ -19,14 +19,17 @@ CREATE TABLE account_balance (
 );
 
 CREATE TABLE card_transaction (
-    id BIGSERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    account_id UUID NOT NULL,
+    account_balance_id UUID NOT NULL,
     account VARCHAR(255) NOT NULL,
     mcc VARCHAR(4) NOT NULL,
     total_amount DECIMAL(15, 2) NOT NULL,
-    account_balance_id BIGINT NOT NULL,
     card_transaction_status VARCHAR(50) NOT NULL,
     merchant VARCHAR(255) NOT NULL,
     version BIGINT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_account FOREIGN KEY (account_id) REFERENCES account(id),
+    CONSTRAINT fk_account_balance FOREIGN KEY (account_balance_id) REFERENCES account_balance(id)
 );

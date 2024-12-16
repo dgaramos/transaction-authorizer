@@ -15,6 +15,7 @@ import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.springframework.stereotype.Repository
 import java.math.BigDecimal
+import java.util.UUID
 
 @Repository
 class AccountBalanceRepositoryImpl : AccountBalanceRepository, BaseRepository<AccountBalance, AccountBalanceTable>(AccountBalanceTable, { row ->
@@ -29,12 +30,12 @@ class AccountBalanceRepositoryImpl : AccountBalanceRepository, BaseRepository<Ac
     )
 }) {
 
-    override fun getAccountBalanceById(id: Long): AccountBalance {
+    override fun getAccountBalanceById(id: UUID): AccountBalance {
         return super.findById(id) ?: throw AccountBalanceNotFoundByIdException(id)
     }
 
     override fun getAccountBalanceByAccountIdAndType(
-        accountId: Long,
+        accountId: UUID,
         type: AccountBalanceType
     ): AccountBalance {
         return transaction {
@@ -48,7 +49,7 @@ class AccountBalanceRepositoryImpl : AccountBalanceRepository, BaseRepository<Ac
     }
 
     override fun getAccountBalancesByAccountId(
-        accountId: Long,
+        accountId: UUID,
     ): List<AccountBalance> {
         val balances = transaction {
             AccountBalanceTable
@@ -64,7 +65,7 @@ class AccountBalanceRepositoryImpl : AccountBalanceRepository, BaseRepository<Ac
     }
 
     override fun upsertAccountBalance(
-        accountId: Long,
+        accountId: UUID,
         accountBalanceType: AccountBalanceType
     ) = try {
             getAccountBalanceByAccountIdAndType(accountId, accountBalanceType)
@@ -78,7 +79,7 @@ class AccountBalanceRepositoryImpl : AccountBalanceRepository, BaseRepository<Ac
         }
 
     override fun updateAccountBalanceAmount(
-        accountBalanceId: Long,
+        accountBalanceId: UUID,
         newAmount: BigDecimal
     ): AccountBalance {
         return getAccountBalanceById(accountBalanceId).let { balance ->
@@ -101,8 +102,9 @@ class AccountBalanceRepositoryImpl : AccountBalanceRepository, BaseRepository<Ac
             amount = row[amount]
         )
     }
-    private fun buildAccountBalanceTable(accountBalance: AccountBalance): Long {
+    private fun buildAccountBalanceTable(accountBalance: AccountBalance): UUID {
         return AccountBalanceTable.insertAndGetId {
+            it[id] = accountBalance.id
             it[accountId] = accountBalance.accountId
             it[accountBalanceType] = accountBalance.accountBalanceType
             it[amount] = accountBalance.amount

@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import java.util.*
 
 @Tag(name = "Account Balances", description = "Endpoints for managing account balances")
 @RestController
@@ -26,7 +27,7 @@ class AccountBalanceController(
         @RequestBody createAccountBalanceRequest: CreateAccountBalanceRequest
     ): ResponseEntity<AccountBalanceCreatedResponse> {
         val createdBalance = accountBalanceService.upsertAccountBalance(
-            createAccountBalanceRequest.accountId,
+            UUID.fromString(createAccountBalanceRequest.accountId),
             createAccountBalanceRequest.type
         )
         val response = AccountBalanceCreatedResponse.fromAccountBalance(createdBalance, emptyList())
@@ -37,13 +38,13 @@ class AccountBalanceController(
     @Operation(summary = "Get account balance info and its transactions")
     @GetMapping("/{id}", produces = ["application/json"])
     fun getAccountBalance(
-        @Parameter(description = "ID of the account balance to retrieve") @PathVariable id: Long,
+        @Parameter(description = "ID of the account balance to retrieve") @PathVariable id: String,
         @Parameter(description = "Offset of the transaction pagination") @RequestParam transactionOffset: Int = 0,
         @Parameter(description = "Limit of the transaction pagination") @RequestParam transactionLimit: Int = 10
     ): ResponseEntity<AccountBalanceCreatedResponse> {
-        val response = accountBalanceService.getAccountBalanceById(id).let { balance ->
+        val response = accountBalanceService.getAccountBalanceById(UUID.fromString(id)).let { balance ->
             cardTransactionService.getAllTransactionsByAccountBalanceId(
-                accountBalanceId = balance.id!!,
+                accountBalanceId = balance.id,
                 offset = transactionOffset,
                 limit = transactionLimit
             ).let { transactions ->

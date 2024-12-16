@@ -13,6 +13,7 @@ import br.com.transactionauthorizer.utils.AccountBalanceTypeUtils
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
 import org.springframework.transaction.annotation.Transactional
+import java.util.*
 
 enum class TransactionStatus(val code: String) {
     APPROVED("00"),
@@ -28,17 +29,17 @@ class ReceiveTransactionServiceImpl(
 ) : ReceiveTransactionService {
 
     override fun receiveTransaction(request: ReceivedTransactionRequest): String {
-        val accountId = request.account.toLong()
+        val accountId = UUID.fromString(request.account)
         val transactionAmount = request.totalAmount
         val accountBalanceType = AccountBalanceTypeUtils.determineBalanceType(request.merchant, request.mcc)
 
         return try {
             val account = accountService.getAccountById(accountId)
             if (accountBalanceType.isCash()){
-                processCashTransaction(account.id!!, transactionAmount, request)
+                processCashTransaction(account.id, transactionAmount, request)
             } else {
                 val accountBalance = accountBalanceService.getAccountBalanceByAccountIdAndType(
-                    accountId = account.id!!,
+                    accountId = account.id,
                     type = accountBalanceType
                 )
                 processTransaction(accountBalance, transactionAmount, request, account.id)
@@ -56,7 +57,7 @@ class ReceiveTransactionServiceImpl(
         accountBalance: AccountBalance,
         transactionAmount: BigDecimal,
         request: ReceivedTransactionRequest,
-        accountId: Long
+        accountId: UUID
     ): String {
         return when {
             accountBalance.amount >= transactionAmount -> updateBalance(accountBalance, request)
@@ -65,7 +66,7 @@ class ReceiveTransactionServiceImpl(
     }
 
     private fun processCashTransaction(
-        accountId: Long,
+        accountId: UUID,
         transactionAmount: BigDecimal,
         request: ReceivedTransactionRequest,
         originalAccountBalance: AccountBalance? = null,
@@ -93,7 +94,7 @@ class ReceiveTransactionServiceImpl(
             totalAmount = request.totalAmount,
             mcc = request.mcc,
             transactionStatus = CardTransactionStatus.APPROVED,
-            accountBalanceId = accountBalance.id!!,
+            accountBalanceId = accountBalance.id,
             merchant = request.merchant
         )
         val updatedAmount = accountBalance.amount - request.totalAmount
@@ -107,12 +108,12 @@ class ReceiveTransactionServiceImpl(
             totalAmount = request.totalAmount,
             mcc = request.mcc,
             transactionStatus = CardTransactionStatus.DENIED,
-            accountBalanceId = accountBalance.id!!,
+            accountBalanceId = accountBalance.id,
             merchant = request.merchant
         )
         return TransactionStatus.DENIED.code
     }
 
-    private fun getCashAccountBalance(accountId: Long): AccountBalance =
+    private fun getCashAccountBalance(accountId: UUID): AccountBalance =
         accountBalanceService.getAccountBalanceByAccountIdAndType(accountId, AccountBalanceType.CASH)
 }

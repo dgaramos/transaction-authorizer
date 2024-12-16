@@ -3,9 +3,10 @@ package br.com.transactionauthorizer.controller.model.response
 import br.com.transactionauthorizer.model.CardTransaction
 import java.math.BigDecimal
 import java.time.format.DateTimeFormatter
+import java.util.*
 
 data class CardTransactionResponse(
-    val id: Long,
+    val id: UUID,
     val account: String,
     val totalAmount: BigDecimal,
     val mcc: String,
@@ -18,7 +19,7 @@ data class CardTransactionResponse(
             val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
             val formattedDate = cardTransaction.createdAt.format(formatter)
             return CardTransactionResponse(
-                id = cardTransaction.id!!,
+                id = cardTransaction.id,
                 account = cardTransaction.account,
                 totalAmount = cardTransaction.totalAmount,
                 mcc = cardTransaction.mcc,

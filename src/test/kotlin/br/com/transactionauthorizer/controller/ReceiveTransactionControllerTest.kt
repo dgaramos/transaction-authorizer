@@ -14,6 +14,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import java.math.BigDecimal
+import java.util.UUID
+
 class ReceiveTransactionControllerTest {
 
     @InjectMocks
@@ -31,7 +33,8 @@ class ReceiveTransactionControllerTest {
 
     @Test
     fun `test create receive transaction`() {
-        val request = ReceivedTransactionRequest("123", BigDecimal("100.00"), "MCC1", "Merchant1")
+        val accountId = UUID.randomUUID()
+        val request = ReceivedTransactionRequest(accountId.toString(), BigDecimal("100.00"), "MCC1", "Merchant1")
         val transactionCode = "XX"
 
         whenever(receiveTransactionService.receiveTransaction(request))

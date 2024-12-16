@@ -12,6 +12,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.*
 import java.math.BigDecimal
 import java.math.RoundingMode
+import java.util.*
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AccountBalanceRepositoryImplTest {
@@ -42,7 +43,7 @@ class AccountBalanceRepositoryImplTest {
 
     @Test
     fun `test upsert account balance`() {
-        val accountId = 123L
+        val accountId = UUID.randomUUID()
         val balanceType = AccountBalanceType.CASH
         val amount = BigDecimal(0).setScale(2, RoundingMode.HALF_UP)
 
@@ -56,7 +57,7 @@ class AccountBalanceRepositoryImplTest {
 
     @Test
     fun `test upsert account balance returns already existing account balance`() {
-        val accountId = 123L
+        val accountId = UUID.randomUUID()
         val balanceType = AccountBalanceType.CASH
         val amount = BigDecimal("100.00")
 
@@ -77,7 +78,7 @@ class AccountBalanceRepositoryImplTest {
 
     @Test
     fun `test get account balance by ID`() {
-        val accountId = 123L
+        val accountId = UUID.randomUUID()
         val balanceType = AccountBalanceType.MEAL
         val amount = BigDecimal("100.00")
 
@@ -97,16 +98,17 @@ class AccountBalanceRepositoryImplTest {
 
     @Test
     fun `test get account balance by non-existing ID`() {
+        val accountId = UUID.randomUUID()
         val exception = Assertions.assertThrows(AccountBalanceNotFoundByIdException::class.java) {
-            repository.getAccountBalanceById(999L)
+            repository.getAccountBalanceById(accountId)
         }
 
-        Assertions.assertEquals("Account balance with ID 999 not found.", exception.message)
+        Assertions.assertEquals("Account balance with ID $accountId not found.", exception.message)
     }
 
     @Test
     fun `test get account balance by account ID and type`() {
-        val accountId = 123L
+        val accountId = UUID.randomUUID()
         val balanceType = AccountBalanceType.MEAL
         val amount = BigDecimal("100.00")
 
@@ -127,7 +129,7 @@ class AccountBalanceRepositoryImplTest {
 
     @Test
     fun `test get account balance by non-existing account ID and type`() {
-        val accountId = 123L
+        val accountId = UUID.randomUUID()
         val balanceType = AccountBalanceType.MEAL
 
         val exception = Assertions.assertThrows(AccountBalanceNotFoundByAccountIdAndTypeException::class.java) {
@@ -139,7 +141,7 @@ class AccountBalanceRepositoryImplTest {
 
     @Test
     fun `test get account balances by account ID`() {
-        val accountId = 123L
+        val accountId = UUID.randomUUID()
 
         TestTableFactory.createAccountBalance(
             accountId = accountId,
@@ -161,11 +163,12 @@ class AccountBalanceRepositoryImplTest {
 
     @Test
     fun `test get account balances by non-existing account ID`() {
+        val accountId = UUID.randomUUID()
         val exception = Assertions.assertThrows(AccountBalancesNotFoundByAccountIdException::class.java) {
-            repository.getAccountBalancesByAccountId(999L)
+            repository.getAccountBalancesByAccountId(accountId)
         }
 
-        Assertions.assertEquals("Account balances with accountId 999 were not found.", exception.message)
+        Assertions.assertEquals("Account balances with accountId $accountId were not found.", exception.message)
     }
 
     @Test
@@ -187,7 +190,7 @@ class AccountBalanceRepositoryImplTest {
 
     @Test
     fun `test update non-existing account balance`() {
-        val nonExistentId = 999L
+        val nonExistentId = UUID.randomUUID()
         val updatedAmount = BigDecimal("150.00")
 
         val exception = Assertions.assertThrows(AccountBalanceNotFoundByIdException::class.java) {

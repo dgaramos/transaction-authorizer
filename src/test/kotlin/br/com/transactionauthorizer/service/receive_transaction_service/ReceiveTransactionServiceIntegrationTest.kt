@@ -23,6 +23,7 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
 import java.math.RoundingMode
+import java.util.*
 
 @ActiveProfiles("test")
 @SpringBootTest
@@ -54,7 +55,7 @@ class ReceiveTransactionServiceIntegrationTest(
         val remainingBalance = accountBalanceRepository.getAccountBalanceById(accountBalanceId).amount
         assertEquals(BigDecimal(150).setScale(2, RoundingMode.HALF_UP), remainingBalance)
 
-        val transactions = cardTransactionRepository.getAllTransactionsByAccountId(request.account)
+        val transactions = cardTransactionRepository.getAllTransactionsByAccountId(UUID.fromString(request.account))
 
         assertEquals(1, transactions.size)
         val transaction = transactions.first()
@@ -95,7 +96,7 @@ class ReceiveTransactionServiceIntegrationTest(
         val remainingCashBalance = accountBalanceRepository.getAccountBalanceById(cashAccountBalanceId).amount
         assertEquals(BigDecimal(30).setScale(2, RoundingMode.HALF_UP), remainingCashBalance)
 
-        val transactions = cardTransactionRepository.getAllTransactionsByAccountId(request.account)
+        val transactions = cardTransactionRepository.getAllTransactionsByAccountId(UUID.fromString(request.account))
         assertEquals(1, transactions.size)
         val transaction = transactions.first()
         assertEquals(CardTransactionStatus.DENIED, transaction.cardTransactionStatus)
@@ -126,7 +127,7 @@ class ReceiveTransactionServiceIntegrationTest(
         val remainingBalance = accountBalanceRepository.getAccountBalanceById(accountBalanceId).amount
         assertEquals(BigDecimal(30).setScale(2, RoundingMode.HALF_UP), remainingBalance)
 
-        val transactions = cardTransactionRepository.getAllTransactionsByAccountId(request.account)
+        val transactions = cardTransactionRepository.getAllTransactionsByAccountId(UUID.fromString(request.account))
         assertEquals(1, transactions.size)
         val transaction = transactions.first()
         assertEquals(CardTransactionStatus.DENIED, transaction.cardTransactionStatus)
@@ -136,7 +137,7 @@ class ReceiveTransactionServiceIntegrationTest(
 
     @Test
     fun `should not commit transaction when account is not found`() {
-        val accountId = 10L
+        val accountId = UUID.randomUUID()
 
         val request = ReceivedTransactionRequest(
             account = accountId.toString(),
@@ -149,7 +150,7 @@ class ReceiveTransactionServiceIntegrationTest(
 
         assertEquals("07", result)
 
-        val transactions = cardTransactionRepository.getAllTransactionsByAccountId(request.account)
+        val transactions = cardTransactionRepository.getAllTransactionsByAccountId(UUID.fromString(request.account))
         assertEquals(0, transactions.size)
     }
 

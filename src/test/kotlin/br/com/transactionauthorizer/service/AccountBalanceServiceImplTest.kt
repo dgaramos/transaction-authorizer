@@ -11,6 +11,7 @@ import org.mockito.MockitoAnnotations
 import java.math.BigDecimal
 import org.junit.jupiter.api.*
 import org.mockito.kotlin.*
+import java.util.*
 
 class AccountBalanceServiceImplTest {
     @Mock
@@ -18,7 +19,7 @@ class AccountBalanceServiceImplTest {
 
     private lateinit var accountBalanceService: AccountBalanceService
 
-    private val accountId = 123L
+    private val accountId = UUID.randomUUID()
     private val balanceType = AccountBalanceType.CASH
     private val amount = BigDecimal("100.00")
 
@@ -31,23 +32,21 @@ class AccountBalanceServiceImplTest {
     @Test
     fun `should get account balances by Id successfully`() {
         val accountBalance1 = TestModelFactory.buildAccountBalance(
-            id = 1L,
             accountId = accountId,
             accountBalanceType = balanceType,
             amount = amount
         )
-        whenever(accountBalanceRepository.getAccountBalanceById(accountBalance1.id!!)).thenReturn(accountBalance1)
+        whenever(accountBalanceRepository.getAccountBalanceById(accountBalance1.id)).thenReturn(accountBalance1)
 
-        val balance = accountBalanceService.getAccountBalanceById(accountBalance1.id!!)
+        val balance = accountBalanceService.getAccountBalanceById(accountBalance1.id)
 
         Assertions.assertNotNull(balance)
-        verify(accountBalanceRepository).getAccountBalanceById(accountBalance1.id!!)
+        verify(accountBalanceRepository).getAccountBalanceById(accountBalance1.id)
     }
 
     @Test
     fun `should create an account balance successfully`() {
         val accountBalance = TestModelFactory.buildAccountBalance(
-            id = 1L,
             accountId = accountId,
             accountBalanceType = balanceType,
             amount = amount
@@ -68,7 +67,6 @@ class AccountBalanceServiceImplTest {
     @Test
     fun `should get account balance by accountId and type successfully`() {
         val accountBalance = TestModelFactory.buildAccountBalance(
-            id = 1L,
             accountId = accountId,
             accountBalanceType = balanceType,
             amount = amount
@@ -89,13 +87,11 @@ class AccountBalanceServiceImplTest {
     @Test
     fun `should get account balances by accountId successfully`() {
         val accountBalance1 = TestModelFactory.buildAccountBalance(
-            id = 1L,
             accountId = accountId,
             accountBalanceType = balanceType,
             amount = amount
         )
         val accountBalance2 = TestModelFactory.buildAccountBalance(
-            id = 2L,
             accountId = accountId,
             accountBalanceType = AccountBalanceType.MEAL,
             amount = BigDecimal("50.00")
@@ -119,7 +115,6 @@ class AccountBalanceServiceImplTest {
         val newAmount = BigDecimal("200.00")
 
         val accountBalance = TestModelFactory.buildAccountBalance(
-            id = 1L,
             accountId = accountId,
             accountBalanceType = balanceType,
             amount = initialAmount
@@ -127,13 +122,13 @@ class AccountBalanceServiceImplTest {
 
         val updatedBalance = accountBalance.copy(amount = newAmount)
 
-        whenever(accountBalanceRepository.updateAccountBalanceAmount(accountBalance.id!!, newAmount)).thenReturn(updatedBalance)
+        whenever(accountBalanceRepository.updateAccountBalanceAmount(accountBalance.id, newAmount)).thenReturn(updatedBalance)
 
-        val result = accountBalanceService.updateAccountBalanceAmount(accountBalance.id!!, newAmount)
+        val result = accountBalanceService.updateAccountBalanceAmount(accountBalance.id, newAmount)
 
         Assertions.assertNotNull(result)
         Assertions.assertEquals(newAmount, result.amount)
 
-        verify(accountBalanceRepository).updateAccountBalanceAmount(accountBalance.id!!, newAmount)
+        verify(accountBalanceRepository).updateAccountBalanceAmount(accountBalance.id, newAmount)
     }
 }

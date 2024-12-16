@@ -39,8 +39,8 @@ class AccountControllerTest {
     @Test
     fun `test get all accounts`() {
         val accountListResponse = listOf(
-            AccountListResponse(id = 1L, name = "Account1"),
-            AccountListResponse(id = 2L, name = "Account2")
+            AccountListResponse(id = UUID.randomUUID().toString(), name = "Account1"),
+            AccountListResponse(id = UUID.randomUUID().toString(), name = "Account2")
         )
 
         whenever(manageAccountService.getAllAccounts(0, 10))
@@ -55,26 +55,28 @@ class AccountControllerTest {
 
     @Test
     fun `test get account by ID`() {
+        val accountId = UUID.randomUUID()
         val accountResponse = AccountResponse(
-            id = 1L,
+            id = accountId.toString(),
             name = "Account1",
             balances = listOf()
         )
 
-        whenever(manageAccountService.getAccountById(1L))
+        whenever(manageAccountService.getAccountById(accountId))
             .thenReturn(ResponseEntity.ok(accountResponse))
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/accounts/1"))
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/accounts/$accountId"))
             .andExpect(MockMvcResultMatchers.status().isOk)
-            .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(1))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(accountId.toString()))
             .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Account1"))
     }
 
     @Test
     fun `test create account`() {
+        val accountId = UUID.randomUUID()
         val accountRequest = AccountRequest(name = "NewAccount")
         val accountResponse = AccountResponse(
-            id = 1L,
+            id = accountId.toString(),
             name = "NewAccount",
             balances = listOf()
         )
@@ -90,7 +92,7 @@ class AccountControllerTest {
                 .content(jsonRequest)
         )
             .andExpect(MockMvcResultMatchers.status().isCreated)
-            .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(1))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(accountId.toString()))
             .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("NewAccount"))
     }
 }

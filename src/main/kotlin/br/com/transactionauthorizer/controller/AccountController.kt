@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import java.util.*
 
 @Tag(name = "Accounts", description = "Endpoints for managing accounts")
 @RestController
@@ -33,9 +34,9 @@ class AccountController(
     @Operation(summary = "Get a specific account by ID with all account balances")
     @GetMapping("/{id}", produces = ["application/json"])
     fun getAccountById(
-        @Parameter(description = "ID of the account to retrieve") @PathVariable id: Long
+        @Parameter(description = "ID of the account to retrieve") @PathVariable id: String
     ): ResponseEntity<AccountResponse> {
-        return manageAccountService.getAccountById(id)
+        return manageAccountService.getAccountById(UUID.fromString(id))
     }
 
     @Operation(summary = "Create a new account")

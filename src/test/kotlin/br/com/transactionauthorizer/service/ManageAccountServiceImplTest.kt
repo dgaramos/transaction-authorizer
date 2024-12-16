@@ -10,6 +10,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.*
 import org.springframework.http.HttpStatus
+import java.util.*
 import kotlin.random.Random
 
 class ManageAccountServiceImplTest {
@@ -28,8 +29,8 @@ class ManageAccountServiceImplTest {
     @Test
     fun `should retrieve all accounts`() {
         val accounts = listOf(
-            TestModelFactory.buildAccount(id = 1L, name = "Account 1"),
-            TestModelFactory.buildAccount(id = 2L, name = "Account 2")
+            TestModelFactory.buildAccount(name = "Account 1"),
+            TestModelFactory.buildAccount(name = "Account 2")
         )
         whenever(accountService.getAllAccounts()).thenReturn(accounts)
 
@@ -42,10 +43,10 @@ class ManageAccountServiceImplTest {
 
     @Test
     fun `should retrieve account by ID`() {
-        val accountId = 1L
+        val accountId = UUID.randomUUID()
         val account = TestModelFactory.buildAccount(id = accountId, name = "Account 1")
         val balances = listOf(
-            AccountBalance(id = 1L, accountId = accountId, accountBalanceType = AccountBalanceType.CASH, amount = 100.toBigDecimal())
+            AccountBalance(accountId = accountId, accountBalanceType = AccountBalanceType.CASH, amount = 100.toBigDecimal())
         )
         whenever(accountService.getAccountById(accountId)).thenReturn(account)
         whenever(accountBalanceService.getAccountBalancesByAccountId(accountId)).thenReturn(balances)
@@ -62,14 +63,14 @@ class ManageAccountServiceImplTest {
     @Test
     fun `should create a new account`() {
         val accountRequest = AccountRequest(name = "New Account")
-        val account = TestModelFactory.buildAccount(id = 1L, name = accountRequest.name)
+        val account = TestModelFactory.buildAccount( name = accountRequest.name)
         val balances = AccountBalanceType.entries.map { balanceType ->
-            TestModelFactory.buildAccountBalance(id = Random.nextLong(), accountId = account.id!!, accountBalanceType = balanceType, amount = 0.toBigDecimal())
+            TestModelFactory.buildAccountBalance(id = UUID.randomUUID(), accountId = account.id, accountBalanceType = balanceType, amount = 0.toBigDecimal())
         }
         whenever(accountService.createAccount(accountRequest.name)).thenReturn(account)
-        whenever(accountBalanceService.upsertAccountBalance(account.id!!, AccountBalanceType.CASH)).thenReturn(balances[0])
-        whenever(accountBalanceService.upsertAccountBalance(account.id!!, AccountBalanceType.FOOD)).thenReturn(balances[1])
-        whenever(accountBalanceService.upsertAccountBalance(account.id!!, AccountBalanceType.MEAL)).thenReturn(balances[2])
+        whenever(accountBalanceService.upsertAccountBalance(account.id, AccountBalanceType.CASH)).thenReturn(balances[0])
+        whenever(accountBalanceService.upsertAccountBalance(account.id, AccountBalanceType.FOOD)).thenReturn(balances[1])
+        whenever(accountBalanceService.upsertAccountBalance(account.id, AccountBalanceType.MEAL)).thenReturn(balances[2])
 
         val response = manageAccountService.createAccount(accountRequest)
 
@@ -77,8 +78,8 @@ class ManageAccountServiceImplTest {
         assertEquals("New Account", response.body?.name)
         assertEquals(3, response.body?.balances?.size)
         verify(accountService, times(1)).createAccount(accountRequest.name)
-        verify(accountBalanceService, times(1)).upsertAccountBalance(account.id!!, AccountBalanceType.CASH)
-        verify(accountBalanceService, times(1)).upsertAccountBalance(account.id!!, AccountBalanceType.MEAL)
-        verify(accountBalanceService, times(1)).upsertAccountBalance(account.id!!, AccountBalanceType.FOOD)
+        verify(accountBalanceService, times(1)).upsertAccountBalance(account.id, AccountBalanceType.CASH)
+        verify(accountBalanceService, times(1)).upsertAccountBalance(account.id, AccountBalanceType.MEAL)
+        verify(accountBalanceService, times(1)).upsertAccountBalance(account.id, AccountBalanceType.FOOD)
     }
 }

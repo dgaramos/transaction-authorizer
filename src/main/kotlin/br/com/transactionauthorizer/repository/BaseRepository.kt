@@ -9,8 +9,9 @@ import org.jetbrains.exposed.sql.statements.UpdateStatement
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.LocalDateTime
 import br.com.transactionauthorizer.exceptions.OptimisticLockException
+import java.util.UUID
 
-abstract class BaseRepository<T : BaseModel, U : BaseTable<Long>>(
+abstract class BaseRepository<T : BaseModel, U : BaseTable<UUID>>(
     private val table: U,
     private val toModel: (ResultRow) -> T
 ) {
@@ -21,8 +22,8 @@ abstract class BaseRepository<T : BaseModel, U : BaseTable<Long>>(
             }
     }
 
-    fun findById(id: Long): T? = transaction {
-        table.select { table.id eq EntityID(id, table as IdTable<Long>) }
+    fun findById(id: UUID): T? = transaction {
+        table.select { table.id eq EntityID(id, table as IdTable<UUID>) }
             .map(toModel)
             .singleOrNull()
     }
@@ -34,7 +35,7 @@ abstract class BaseRepository<T : BaseModel, U : BaseTable<Long>>(
                 .singleOrNull() ?: throw IllegalArgumentException("Entity not found for ID ${entity.id}")
 
             if (dbVersion != entity.version) {
-                throw OptimisticLockException(entity.id!!, dbVersion, entity.version)
+                throw OptimisticLockException(entity.id, dbVersion, entity.version)
             }
 
             table.update({ table.id eq entity.id }) { updateStatement ->
@@ -47,7 +48,7 @@ abstract class BaseRepository<T : BaseModel, U : BaseTable<Long>>(
         }
     }
 
-    fun create(entity: T, buildTable: (T) -> Long): T = transaction {
+    fun create(entity: T, buildTable: (T) -> UUID): T = transaction {
         findById(buildTable(entity))!!
     }
 }

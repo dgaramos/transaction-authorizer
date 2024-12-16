@@ -10,6 +10,7 @@ import br.com.transactionauthorizer.service.ManageAccountService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
+import java.util.UUID
 
 @Service
 class ManageAccountServiceImpl(
@@ -24,7 +25,7 @@ class ManageAccountServiceImpl(
         return ResponseEntity(response, HttpStatus.OK)
     }
 
-    override fun getAccountById(id: Long): ResponseEntity<AccountResponse> {
+    override fun getAccountById(id: UUID): ResponseEntity<AccountResponse> {
         val account = accountService.getAccountById(id)
         val balances = accountBalanceService.getAccountBalancesByAccountId(id)
         val response = AccountResponse.fromAccount(account, balances)
@@ -34,7 +35,7 @@ class ManageAccountServiceImpl(
     override fun createAccount(accountRequest: AccountRequest): ResponseEntity<AccountResponse> {
         val account = accountService.createAccount(accountRequest.name)
         val balances = AccountBalanceType.entries.map { balanceType ->
-            accountBalanceService.upsertAccountBalance(account.id!!, balanceType)
+            accountBalanceService.upsertAccountBalance(account.id, balanceType)
         }
         val response = AccountResponse.fromAccount(account, balances)
         return ResponseEntity(response, HttpStatus.CREATED)

@@ -18,6 +18,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import java.math.BigDecimal
+import java.util.UUID
 
 class AccountBalanceControllerTest {
 
@@ -39,11 +40,12 @@ class AccountBalanceControllerTest {
 
     @Test
     fun `test create account balance`() {
-        val request = CreateAccountBalanceRequest(123L, AccountBalanceType.CASH)
-        val createdBalance = TestModelFactory.buildAccountBalance(1L, 123L, AccountBalanceType.CASH, BigDecimal(0))
+        val accountId = UUID.randomUUID()
+        val request = CreateAccountBalanceRequest(accountId.toString(), AccountBalanceType.CASH)
+        val createdBalance = TestModelFactory.buildAccountBalance(accountId = accountId, accountBalanceType = AccountBalanceType.CASH, amount = BigDecimal(0))
         val amount = BigDecimal(0)
 
-        whenever(accountBalanceService.upsertAccountBalance(123L, AccountBalanceType.CASH))
+        whenever(accountBalanceService.upsertAccountBalance(accountId, AccountBalanceType.CASH))
             .thenReturn(createdBalance)
 
         val objectMapper = ObjectMapper()
@@ -55,23 +57,23 @@ class AccountBalanceControllerTest {
                 .content(jsonRequest)
         )
             .andExpect(MockMvcResultMatchers.status().isCreated)
-            .andExpect(MockMvcResultMatchers.jsonPath("$.accountId").value(123L))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.accountId").value(accountId.toString()))
             .andExpect(MockMvcResultMatchers.jsonPath("$.type").value("CASH"))
             .andExpect(MockMvcResultMatchers.jsonPath("$.amount").value(amount))
 
         verify(accountBalanceService, times(1))
-            .upsertAccountBalance(123L, AccountBalanceType.CASH)
+            .upsertAccountBalance(accountId, AccountBalanceType.CASH)
     }
 
     @Test
     fun `test get account balance`() {
-        val balanceId = 1L
+        val balanceId = UUID.randomUUID()
+        val accountId = UUID.randomUUID()
         val offset = 0
         val limit = 10
-        val accountBalance = TestModelFactory.buildAccountBalance(balanceId, 123L, AccountBalanceType.CASH, BigDecimal(100))
+        val accountBalance = TestModelFactory.buildAccountBalance(balanceId, accountId, AccountBalanceType.CASH, BigDecimal(100))
         val transactions =
             TestModelFactory.buildCardTransaction(
-                id = 1L,
                 accountBalanceId = balanceId,
                 totalAmount = BigDecimal(50),
                 cardTransactionStatus = CardTransactionStatus.APPROVED
@@ -84,7 +86,7 @@ class AccountBalanceControllerTest {
 
         mockMvc.perform(MockMvcRequestBuilders.get("/api/account-balances/$balanceId?transactionOffset=$offset&transactionLimit=$limit"))
             .andExpect(MockMvcResultMatchers.status().isOk)
-            .andExpect(MockMvcResultMatchers.jsonPath("$.accountId").value(123L))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.accountId").value(accountId.toString()))
             .andExpect(MockMvcResultMatchers.jsonPath("$.type").value("CASH"))
             .andExpect(MockMvcResultMatchers.jsonPath("$.amount").value(100))
             .andExpect(MockMvcResultMatchers.jsonPath("$.transactions.length()").value(1))

@@ -23,8 +23,8 @@ class AccountServiceImplTest {
 
     @Test
     fun `should return all accounts successfully`() {
-        val account1 = TestModelFactory.buildAccount(id = 1L, name = "Account 1")
-        val account2 = TestModelFactory.buildAccount(id = 2L, name = "Account 2")
+        val account1 = TestModelFactory.buildAccount(name = "Account 1")
+        val account2 = TestModelFactory.buildAccount(name = "Account 2")
 
         whenever(accountRepository.getAllAccounts(offset = 0, limit = 2)).thenReturn(listOf(account1, account2))
 
@@ -40,17 +40,17 @@ class AccountServiceImplTest {
 
     @Test
     fun `should return account by id successfully`() {
-        val account = TestModelFactory.buildAccount(id = 1L, name = "Account 1")
+        val account = TestModelFactory.buildAccount(name = "Account 1")
 
-        whenever(accountRepository.getAccountById(1L)).thenReturn(account)
+        whenever(accountRepository.getAccountById(account.id)).thenReturn(account)
 
-        val result = accountService.getAccountById(1L)
+        val result = accountService.getAccountById(account.id)
 
         Assertions.assertNotNull(result)
-        Assertions.assertEquals(1L, result.id)
+        Assertions.assertEquals(account.id, result.id)
         Assertions.assertEquals("Account 1", result.name)
 
-        verify(accountRepository).getAccountById(1L)
+        verify(accountRepository).getAccountById(account.id)
     }
 
     @Test
@@ -58,12 +58,12 @@ class AccountServiceImplTest {
         val name = "New Account"
         val account = TestModelFactory.buildAccount(name = name)
 
-        whenever(accountRepository.createAccount(any())).thenReturn(account.copy(id = 1L))
+        whenever(accountRepository.createAccount(any())).thenReturn(account)
 
         val createdAccount = accountService.createAccount(name)
 
         Assertions.assertNotNull(createdAccount)
-        Assertions.assertEquals(1L, createdAccount.id!!)
+        Assertions.assertEquals(account.id, createdAccount.id)
         Assertions.assertEquals(name, createdAccount.name)
 
     }

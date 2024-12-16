@@ -9,30 +9,31 @@ import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.math.BigDecimal
 import java.time.LocalDateTime
+import java.util.*
 
 object TestTableFactory {
 
     fun createAccount(
-        id: Long? = null,
+        id: UUID = UUID.randomUUID(),
         name: String = "Test Account"
-    ): Long {
+    ): UUID {
         return transaction {
             AccountTable.insertAndGetId {
-                if (id != null) it[AccountTable.id] = id
+                it[AccountTable.id] = id
                 it[AccountTable.name] = name
             }.value
         }
     }
 
     fun createAccountBalance(
-        id: Long? = null,
-        accountId: Long,
+        id: UUID = UUID.randomUUID(),
+        accountId: UUID = UUID.randomUUID(),
         accountBalanceType: AccountBalanceType = AccountBalanceType.CASH,
         amount: BigDecimal = BigDecimal.valueOf(100.00)
-    ): Long {
+    ): UUID {
         return transaction {
             AccountBalanceTable.insertAndGetId {
-                if (id != null) it[AccountBalanceTable.id] = id
+                it[AccountBalanceTable.id] = id
                 it[AccountBalanceTable.accountId] = accountId
                 it[AccountBalanceTable.accountBalanceType] = accountBalanceType
                 it[AccountBalanceTable.amount] = amount
@@ -41,23 +42,25 @@ object TestTableFactory {
     }
 
     fun createCardTransaction(
-        id: Long? = null,
-        account: String = "Test Account",
+        id: UUID = UUID.randomUUID(),
+        account: String = UUID.randomUUID().toString(),
+        accountBalanceId: UUID = UUID.randomUUID(),
+        accountId: UUID = UUID.fromString(account),
         totalAmount: BigDecimal = BigDecimal.valueOf(50.00),
         mcc: String = "1234",
         merchant: String = "Test Merchant",
-        accountBalanceId: Long = 1L,
         cardTransactionStatus: CardTransactionStatus = CardTransactionStatus.APPROVED,
         createdAt: LocalDateTime = LocalDateTime.now()
-    ): Long {
+    ): UUID {
         return transaction {
             CardTransactionTable.insertAndGetId {
-                if (id != null) it[CardTransactionTable.id] = id
+                it[CardTransactionTable.id] = id
+                it[CardTransactionTable.accountId] = accountId
+                it[CardTransactionTable.accountBalanceId] = accountBalanceId
                 it[CardTransactionTable.account] = account
                 it[CardTransactionTable.totalAmount] = totalAmount
                 it[CardTransactionTable.mcc] = mcc
                 it[CardTransactionTable.merchant] = merchant
-                it[CardTransactionTable.accountBalanceId] = accountBalanceId
                 it[CardTransactionTable.cardTransactionStatus] = cardTransactionStatus
                 it[CardTransactionTable.createdAt] = createdAt
             }.value

@@ -3,9 +3,10 @@ package br.com.transactionauthorizer.model.table
 import br.com.transactionauthorizer.model.AccountBalanceType
 import org.jetbrains.exposed.sql.Column
 import java.math.BigDecimal
+import java.util.UUID
 
-object AccountBalanceTable: BaseTable<Long>("account_balance") {
-    val accountId: Column<Long> = long("account_id")
+object AccountBalanceTable: BaseTable<UUID>("account_balance") {
+    val accountId: Column<UUID> = uuid("account_id")
     val accountBalanceType: Column<AccountBalanceType> = enumerationByName(
         name ="account_balance_type",
         length = 10,

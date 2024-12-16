@@ -11,6 +11,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
+import java.util.*
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AccountRepositoryImplTest {
@@ -40,7 +41,7 @@ class AccountRepositoryImplTest {
 
     @Test
     fun `test create account`() {
-        val account = TestModelFactory.buildAccount(id = 1L, name = "Test Account")
+        val account = TestModelFactory.buildAccount(name = "Test Account")
 
         val createdAccount = repository.createAccount(account)
 
@@ -76,11 +77,12 @@ class AccountRepositoryImplTest {
 
     @Test
     fun `test get account by non-existing ID`() {
+        val accountId = UUID.randomUUID()
         val exception = Assertions.assertThrows(AccountNotFoundByIdException::class.java) {
-            repository.getAccountById(999L)
+            repository.getAccountById(accountId)
         }
 
-        assertEquals("Account with accountId 999 not found.", exception.message)
+        assertEquals("Account with accountId $accountId not found.", exception.message)
     }
 
 }

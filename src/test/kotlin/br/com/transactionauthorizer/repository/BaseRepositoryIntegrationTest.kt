@@ -18,16 +18,17 @@ import org.springframework.stereotype.Repository
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
+import java.util.UUID
 
 data class TestModel(
-    override val id: Long? = null,
+    override val id: UUID = UUID.randomUUID(),
     val name: String,
     override val version: Long = 0,
     override val createdAt: LocalDateTime = LocalDateTime.now(),
     override val updatedAt: LocalDateTime = LocalDateTime.now()
 ) : BaseModel(id, version, createdAt, updatedAt)
 
-object TestTable : BaseTable<Long>("Test") {
+object TestTable : BaseTable<UUID>("Test") {
     val name = varchar("name", 50)
 
     override val primaryKey = PrimaryKey(id, name = "PK_Test_Id")
@@ -47,8 +48,9 @@ class TestRepository : BaseRepository<TestModel, TestTable>(
     }
 ) {
 
-    private fun buildTestTable(testModel: TestModel): Long {
+    private fun buildTestTable(testModel: TestModel): UUID {
         return TestTable.insertAndGetId {
+            it[id] = testModel.id
             it[name] = testModel.name
             it[TestTable.version] = testModel.version
             it[TestTable.createdAt] = testModel.createdAt
@@ -67,7 +69,7 @@ class TestRepository : BaseRepository<TestModel, TestTable>(
             updateStatement[TestTable.updatedAt] = entity.updatedAt
         }
 
-    fun findTestById(id: Long) =
+    fun findTestById(id: UUID) =
         super.findById(id)
 
     fun findAllTests(offset: Int = 0, limit: Int = 10) =
@@ -133,7 +135,7 @@ class BaseRepositoryIntegrationTest {
         val test = TestModel(name = "John Doe")
         val createdTest = testRepository.createTest(test)
 
-        val foundAccount = testRepository.findTestById(createdTest.id!!)
+        val foundAccount = testRepository.findTestById(createdTest.id)
 
         assertNotNull(foundAccount)
         assertEquals(createdTest.id, foundAccount?.id)
