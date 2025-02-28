@@ -4,6 +4,21 @@ This is an example **transaction authorization system** that validates and store
 
 The system integrates with a **PostgreSQL database** for persistence and exposes a **REST API** for external interaction. All available endpoints can be found in the [**Swagger** documentation](#swagger-documentation).
 
+---
+
+## 📌 Table of Contents
+
+1. **[Project Overview](#project-overview)**
+2. **[Project Stack](#project-stack)**
+3. **[Database Structure](#database-structure)**
+4. **[Running the Project](#running-the-project)**
+   - [Using the Provided Script](#running-the-project-with-the-script)
+   - [Manual Setup](docs/MANUAL_SETUP.md)
+   - [IntelliJ IDEA Setup](docs/INTELLIJ_SETUP.md)
+5. **[Swagger Documentation](#swagger-documentation)**
+6. **[Additional Resources](#additional-resources)**
+7. **[Folder Structure](#folder-structure)**
+8. **[Notes](#notes)**
 
 ---
 
@@ -32,6 +47,21 @@ The **Transaction Authorizer** is a Spring Boot application designed to:
 3. Provide a REST API for transaction authorization.
 
 The application is configured to run in Docker containers with PostgreSQL as the backend database. A custom script is provided to streamline the process of building, running, and managing the application.
+![Transaction Authorizer ERD](https://github.com/user-attachments/assets/f49d350d-26e1-4f1d-99fa-be830b40f2c9)
+
+---
+
+## Database Structure
+
+The database consists of three main tables:
+
+- **account**: Stores information about accounts.
+- **account_balance**: Manages different balance types (FOOD, MEAL, CASH) for each account.
+- **card_transaction**: Tracks transactions and their statuses.
+
+Below is the **Entity Relationship Diagram (ERD)** illustrating the database structure:
+
+![Transaction Authorizer ERD](https://github.com/user-attachments/assets/f49d350d-26e1-4f1d-99fa-be830b40f2c9)
 
 ---
 
