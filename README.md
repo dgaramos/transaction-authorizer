@@ -47,7 +47,6 @@ The **Transaction Authorizer** is a Spring Boot application designed to:
 3. Provide a REST API for transaction authorization.
 
 The application is configured to run in Docker containers with PostgreSQL as the backend database. A custom script is provided to streamline the process of building, running, and managing the application.
-![Transaction Authorizer ERD](https://github.com/user-attachments/assets/f49d350d-26e1-4f1d-99fa-be830b40f2c9)
 
 ---
 
