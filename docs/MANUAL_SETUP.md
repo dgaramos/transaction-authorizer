@@ -1,99 +1,63 @@
+# Manual Setup
+
+Follow these steps to run the application without the `dev` CLI or `transaction-authorizer.sh`.
+
 ---
-### Running the Project Manually
 
-If you prefer to run the application without using the provided script, follow these steps:
+## Prerequisites
 
----
-
-#### Prerequisites
-
-1. **Install Docker and Docker Compose**:  
-   Ensure Docker and Docker Compose are installed and running on your system. You can verify this by running:
+1. **Docker and Docker Compose** — verify with:
    ```bash
    docker --version
    docker compose version
    ```
 
-2. **Install Java 17 (OpenJDK)**:  
-   Download and install OpenJDK 17 for running Gradle commands and building the project.
+2. **Eclipse Temurin 17** — required to run Gradle commands locally.
 
-3. **Install Gradle** (Optional):  
-   If Gradle is not installed, the `./gradlew` wrapper included in the project can be used instead.
+3. **Gradle** — optional; the `./gradlew` wrapper in the project can be used instead.
 
 ---
 
-#### Steps to Run the Application
+## Steps
 
-1. **Build the Application**:  
-   Use Gradle to clean and build the project:
+1. **Build the application**:
    ```bash
    ./gradlew clean build
    ```
+   This compiles the source, runs all tests, and produces a `.jar` in `build/libs/`.
 
-   This will compile the source code, run tests, and generate a runnable `.jar` file in the `build/libs` directory.
-
-2. **Set Up the Database**:  
-   Start the PostgreSQL service using Docker Compose:
+2. **Start the database**:
    ```bash
    docker compose up postgres-dev
    ```
+   Wait until the container is ready — check with `docker logs postgres-dev`.
 
-   Wait until the PostgreSQL container is fully initialized. You can check its logs to ensure it's ready:
-   ```bash
-   docker logs postgres-dev
-   ```
-
-3. **Run the Application**:  
-   With the database running, start the Spring Boot application locally:
+3. **Run the application**:
    ```bash
    java -jar build/libs/transaction-authorizer-<version>.jar
    ```
+   Replace `<version>` with the actual version from the jar filename.
 
-   Replace `<version>` with the actual version number of the generated `.jar` file (e.g., `1.0.0`).
-
-4. **Access the Application**:
-    - The application should now be running and accessible at [http://localhost:8080](http://localhost:8080).
-    - Swagger UI for API documentation is available at [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html).
-
----
-
-#### Cleaning Up
-
-To stop and clean up the environment:
-
-1. **Stop Services**:  
-   Stop the PostgreSQL container:
-   ```bash
-   docker compose down
-   ```
-
-2. **Remove Docker Volumes (Optional)**:  
-   If you want a clean slate, remove Docker volumes:
-   ```bash
-   docker volume prune -f
-   ```
-
-3. **Remove Build Artifacts (Optional)**:  
-   If you want to remove build files:
-   ```bash
-   rm -rf build
-   ```
+4. **Access the application**:
+   - API: [http://localhost:8080](http://localhost:8080)
+   - Swagger UI: [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
 
 ---
 
-#### Notes
+## Cleanup
 
-- **Database Configuration**:  
-  By default, the application connects to a PostgreSQL instance defined in `compose.yaml`. If you're running PostgreSQL outside Docker, update the database credentials in `src/main/resources/application.properties`.
+```bash
+# Stop all containers and remove project volumes
+docker compose down -v
 
-- **Custom Gradle Commands**:  
-  If you need to skip tests or use additional build options, modify the Gradle command accordingly. For example:
-   ```bash
-   ./gradlew clean build -x test
-   ```
-
-- **Troubleshooting**:
-    - If the application fails to start, check the logs for errors in the database connection or application configuration.
-    - Ensure the PostgreSQL container is running and reachable at the configured host and port.
+# Remove build artifacts
+rm -rf build
+```
 
 ---
+
+## Notes
+
+- Database credentials and host are configured in `src/main/resources/application.properties`.
+- To build without running tests: `./gradlew clean build -x test`
+- If the application fails to start, check Docker logs for connection errors.
