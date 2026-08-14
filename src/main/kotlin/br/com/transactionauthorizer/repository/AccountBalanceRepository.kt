@@ -3,7 +3,7 @@ package br.com.transactionauthorizer.repository
 import br.com.transactionauthorizer.model.AccountBalance
 import br.com.transactionauthorizer.model.AccountBalanceType
 import java.math.BigDecimal
-import java.util.*
+import java.util.UUID
 
 interface AccountBalanceRepository {
 

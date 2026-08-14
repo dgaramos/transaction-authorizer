@@ -3,14 +3,19 @@ package br.com.transactionauthorizer.repository
 import br.com.transactionauthorizer.exceptions.AccountNotFoundByIdException
 import br.com.transactionauthorizer.factory.TestModelFactory
 import br.com.transactionauthorizer.factory.TestTableFactory
-import br.com.transactionauthorizer.model.table.AccountTable
+import br.com.transactionauthorizer.repository.table.AccountTable
 import br.com.transactionauthorizer.repository.implementations.AccountRepositoryImpl
 import br.com.transactionauthorizer.support.PostgresTestContainer
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.junit.jupiter.api.*
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
-import java.util.*
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Order
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
+import java.util.UUID
 
 @Order(10)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)

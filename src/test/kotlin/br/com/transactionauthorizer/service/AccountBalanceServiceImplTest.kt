@@ -10,11 +10,12 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.verify
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import java.math.BigDecimal
-import org.junit.jupiter.api.*
-import java.util.*
+import java.util.UUID
 
 class AccountBalanceServiceImplTest {
+
     @MockK
     private lateinit var accountBalanceRepository: AccountBalanceRepository
 

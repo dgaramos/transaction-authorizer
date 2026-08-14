@@ -1,15 +1,22 @@
 package br.com.transactionauthorizer.repository
 
-import br.com.transactionauthorizer.exceptions.*
+import br.com.transactionauthorizer.exceptions.AccountBalanceNotFoundByAccountIdAndTypeException
+import br.com.transactionauthorizer.exceptions.AccountBalanceNotFoundByIdException
+import br.com.transactionauthorizer.exceptions.AccountBalancesNotFoundByAccountIdException
 import br.com.transactionauthorizer.factory.TestTableFactory
 import br.com.transactionauthorizer.model.AccountBalanceType
 import br.com.transactionauthorizer.repository.implementations.AccountBalanceRepositoryImpl
 import br.com.transactionauthorizer.support.PostgresTestContainer
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.junit.jupiter.api.*
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Order
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 import java.math.BigDecimal
 import java.math.RoundingMode
-import java.util.*
+import java.util.UUID
 
 @Order(10)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)

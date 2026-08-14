@@ -1,18 +1,18 @@
 package br.com.transactionauthorizer.service.receive_transaction_service
 
 import br.com.transactionauthorizer.constants.MccLists.MEAL_MCCS
-import br.com.transactionauthorizer.controller.model.request.ReceivedTransactionRequest
 import br.com.transactionauthorizer.factory.TestTableFactory
+import br.com.transactionauthorizer.model.TransactionCommand
 import br.com.transactionauthorizer.model.AccountBalanceType
 import br.com.transactionauthorizer.model.CardTransactionStatus
-import br.com.transactionauthorizer.model.table.AccountBalanceTable
-import br.com.transactionauthorizer.model.table.AccountTable
-import br.com.transactionauthorizer.model.table.CardTransactionTable
+import br.com.transactionauthorizer.repository.table.AccountBalanceTable
+import br.com.transactionauthorizer.repository.table.AccountTable
+import br.com.transactionauthorizer.repository.table.CardTransactionTable
 import br.com.transactionauthorizer.repository.AccountBalanceRepository
 import br.com.transactionauthorizer.repository.CardTransactionRepository
 import br.com.transactionauthorizer.service.ReceiveTransactionService
 import br.com.transactionauthorizer.support.AbstractSpringIntegrationTest
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -21,7 +21,7 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
 import java.math.RoundingMode
-import java.util.*
+import java.util.UUID
 
 @Order(1)
 @ActiveProfiles("test")
@@ -41,7 +41,7 @@ class ReceiveTransactionServiceIntegrationTest(
             accountId = accountId,
             amount = BigDecimal(200)
         )
-        val request = ReceivedTransactionRequest(
+        val request = TransactionCommand(
             account = accountId.toString(),
             totalAmount = BigDecimal(50),
             mcc = "5811",
@@ -77,7 +77,7 @@ class ReceiveTransactionServiceIntegrationTest(
             amount = BigDecimal(30)
         )
 
-        val request = ReceivedTransactionRequest(
+        val request = TransactionCommand(
             account = accountId.toString(),
             totalAmount = BigDecimal(50),
             mcc = MEAL_MCCS.first(),
@@ -112,7 +112,7 @@ class ReceiveTransactionServiceIntegrationTest(
             amount = BigDecimal(30)
         )
 
-        val request = ReceivedTransactionRequest(
+        val request = TransactionCommand(
             account = accountId.toString(),
             totalAmount = BigDecimal(50),
             mcc = MEAL_MCCS.first(),
@@ -138,7 +138,7 @@ class ReceiveTransactionServiceIntegrationTest(
     fun `should not commit transaction when account is not found`() {
         val accountId = UUID.randomUUID()
 
-        val request = ReceivedTransactionRequest(
+        val request = TransactionCommand(
             account = accountId.toString(),
             totalAmount = BigDecimal(50),
             mcc = "5711",

@@ -2,14 +2,18 @@ package br.com.transactionauthorizer.repository.implementations
 
 import br.com.transactionauthorizer.model.CardTransaction
 import br.com.transactionauthorizer.model.CardTransactionStatus
-import br.com.transactionauthorizer.model.table.CardTransactionTable
+import br.com.transactionauthorizer.repository.table.CardTransactionTable
 import br.com.transactionauthorizer.repository.BaseRepository
 import br.com.transactionauthorizer.repository.CardTransactionRepository
-import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.ResultRow
+import org.jetbrains.exposed.sql.SortOrder
+import org.jetbrains.exposed.sql.insertAndGetId
+import org.jetbrains.exposed.sql.selectAll
+import br.com.transactionauthorizer.repository.table.CardTransactionTable.cardTransactionStatus
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.springframework.stereotype.Repository
 import java.math.BigDecimal
-import java.util.*
+import java.util.UUID
 
 @Repository
 class CardTransactionRepositoryImpl : CardTransactionRepository, BaseRepository<CardTransaction, CardTransactionTable>(

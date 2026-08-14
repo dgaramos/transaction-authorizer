@@ -36,7 +36,7 @@ class AccountBalanceControllerTest {
     @BeforeEach
     fun setup() {
         MockKAnnotations.init(this)
-        mockMvc = MockMvcBuilders.standaloneSetup(accountBalanceController, cardTransactionService).build()
+        mockMvc = MockMvcBuilders.standaloneSetup(accountBalanceController).build()
     }
 
     @Test

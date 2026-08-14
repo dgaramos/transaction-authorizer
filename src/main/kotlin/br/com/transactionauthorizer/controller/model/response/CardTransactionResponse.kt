@@ -3,7 +3,7 @@ package br.com.transactionauthorizer.controller.model.response
 import br.com.transactionauthorizer.model.CardTransaction
 import java.math.BigDecimal
 import java.time.format.DateTimeFormatter
-import java.util.*
+import java.util.UUID
 
 data class CardTransactionResponse(
     val id: UUID,

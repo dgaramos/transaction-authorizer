@@ -1,8 +1,7 @@
-package br.com.transactionauthorizer.model.table
+package br.com.transactionauthorizer.repository.table
 
 import org.jetbrains.exposed.sql.Column
 import java.util.UUID
-
 
 object AccountTable : BaseTable<UUID>("account") {
     val name: Column<String> = varchar("name", 50)

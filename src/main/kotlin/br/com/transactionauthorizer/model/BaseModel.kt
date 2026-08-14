@@ -1,7 +1,7 @@
 package br.com.transactionauthorizer.model
 
 import java.time.LocalDateTime
-import java.util.*
+import java.util.UUID
 
 abstract class BaseModel(
     open val id: UUID,

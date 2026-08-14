@@ -1,4 +1,4 @@
-package br.com.transactionauthorizer.model.table
+package br.com.transactionauthorizer.repository.table
 
 import br.com.transactionauthorizer.model.CardTransactionStatus
 import org.jetbrains.exposed.sql.Column
@@ -13,12 +13,12 @@ object CardTransactionTable : BaseTable<UUID>("card_transaction") {
         precision = 10,
         scale = 2
     )
-    val mcc: Column<String>  = varchar("mcc", 4)
-    val merchant: Column<String>  = varchar("merchant", 255)
+    val mcc: Column<String> = varchar("mcc", 4)
+    val merchant: Column<String> = varchar("merchant", 255)
     val accountBalanceId: Column<UUID> = uuid("account_balance_id")
     val cardTransactionStatus: Column<CardTransactionStatus> =
         CardTransactionTable.enumerationByName(
-            name ="card_transaction_status",
+            name = "card_transaction_status",
             length = 10,
             klass = CardTransactionStatus::class
         )

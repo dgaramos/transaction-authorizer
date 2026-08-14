@@ -2,7 +2,7 @@ package br.com.transactionauthorizer.model
 
 import java.math.BigDecimal
 import java.time.LocalDateTime
-import java.util.*
+import java.util.UUID
 
 data class AccountBalance(
     override val id: UUID = UUID.randomUUID(),

@@ -1,10 +1,14 @@
 package br.com.transactionauthorizer.factory
 
-import br.com.transactionauthorizer.model.*
+import br.com.transactionauthorizer.model.Account
+import br.com.transactionauthorizer.model.AccountBalance
+import br.com.transactionauthorizer.model.AccountBalanceType
+import br.com.transactionauthorizer.model.CardTransaction
+import br.com.transactionauthorizer.model.CardTransactionStatus
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
-import java.util.*
+import java.util.UUID
 
 object TestModelFactory {
 

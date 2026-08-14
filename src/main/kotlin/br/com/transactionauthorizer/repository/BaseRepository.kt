@@ -1,8 +1,11 @@
 package br.com.transactionauthorizer.repository
 
 import br.com.transactionauthorizer.model.BaseModel
-import br.com.transactionauthorizer.model.table.BaseTable
-import org.jetbrains.exposed.sql.*
+import br.com.transactionauthorizer.repository.table.BaseTable
+import org.jetbrains.exposed.sql.ResultRow
+import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.update
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IdTable
 import org.jetbrains.exposed.sql.statements.UpdateStatement

@@ -10,24 +10,26 @@ The stack is: Kotlin 1.9, Spring Boot 3.4, Jetbrains Exposed (SQL DSL), Flyway, 
 
 ## Architecture
 
-The codebase follows a layered architecture with interface/implementation separation at every layer:
+The codebase follows a Hexagonal Architecture (Ports & Adapters). The dependency rule is strict: outer layers depend on inner layers, never the other way around.
 
 ```
-controller/          → REST endpoints, request/response models
-  model/request/     → inbound DTOs
-  model/response/    → outbound DTOs
-service/             → business logic interfaces
-  implementations/   → concrete service classes
-repository/          → data access interfaces
-  implementations/   → concrete repository classes (Exposed DSL)
-model/               → domain models (data classes extending BaseModel)
-  table/             → Exposed table objects (extend BaseTable)
-exceptions/          → typed exception classes per error scenario
-constants/           → MCC lists, merchant name lists
-utils/               → stateless helpers (e.g. balance type resolution)
+controller/              → input adapters (REST)
+  model/request/         → inbound DTOs (never cross into service/domain)
+  model/response/        → outbound DTOs
+service/                 → application ports (interfaces) + core logic
+  implementations/       → core: concrete service classes (@Service)
+repository/              → output ports (interfaces) + persistence adapters
+  implementations/       → persistence adapters: Exposed DSL (@Repository)
+  table/                 → Exposed table objects (infrastructure, not domain)
+model/                   → domain: data classes, enums, commands
+exceptions/              → typed exception classes per error scenario
+constants/               → MCC lists, merchant name lists
+utils/                   → stateless helpers (e.g. balance type resolution)
 ```
 
-Every service and repository is declared as an interface first; the implementation lives in the `implementations/` subdirectory and is annotated with `@Service` or `@Repository`. Never put business logic directly in a controller.
+**Dependency rule:** controllers translate inbound DTOs into domain commands (`TransactionCommand`) before calling services. Services and domain classes must never import from `controller/`. Repository table objects live in `repository/table/` because they are persistence infrastructure, not domain concepts.
+
+Services are declared as interfaces (ports) so controller tests can mock them without loading a Spring context. Repository interfaces are output ports — keep them; they can be swapped for different persistence backends. Never inject `*Impl` classes directly.
 
 ---
 
@@ -39,7 +41,7 @@ Every service and repository is declared as an interface first; the implementati
 2. Implement in the `implementations/` subdirectory.
 3. Add request/response DTOs under `controller/model/request` and `controller/model/response`.
 4. Write a controller test (Mockito + MockMvc, no Spring context) and a service/repository test.
-5. If a new table is needed, add an Exposed table object under `model/table/` and create a new Flyway migration (`V{n}__description.sql`). Never edit existing migrations.
+5. If a new table is needed, add an Exposed table object under `repository/table/` and create a new Flyway migration (`V{n}__description.sql`). Never edit existing migrations.
 
 ### Database migrations
 
@@ -60,9 +62,15 @@ Every service and repository is declared as an interface first; the implementati
 
 ---
 
+## Code Style
+
+Never use star imports (`import foo.*`). Always list each import explicitly.
+
+---
+
 ## Testing
 
-Tests use JUnit 5 + Mockito Kotlin. No Spring context is loaded for controller or unit tests — use `MockitoAnnotations.openMocks(this)` and `MockMvcBuilders.standaloneSetup(...)`.
+Tests use JUnit 5 + MockK. No Spring context is loaded for controller or unit tests — use `MockKAnnotations.init(this)` and `MockMvcBuilders.standaloneSetup(...)`.
 
 Repository integration tests extend `BaseRepositoryIntegrationTest` and run against an in-memory H2 database (profile `test`). The `application-test.properties` disables Flyway and uses `ddl-auto=update`.
 
@@ -152,3 +160,4 @@ The app exposes Swagger UI at `http://localhost:8080/swagger-ui/index.html`.
 - Do not edit applied Flyway migrations.
 - Do not use `docker volume prune` or `docker network prune` — use `docker compose down -v` instead to avoid affecting other local projects.
 - Do not use `postgres:latest` — it is pinned to `postgres:16` for stability.
+- Do not use star imports (`import foo.*`). Every import must be explicit. This applies to all packages: `java.util.*`, `org.junit.jupiter.api.*`, `org.springframework.web.bind.annotation.*`, `org.jetbrains.exposed.sql.*`, domain packages, etc.

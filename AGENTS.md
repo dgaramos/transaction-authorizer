@@ -27,7 +27,7 @@ The project uses a strict interface/implementation pattern:
 
 1. Identify the right layer: controller → service → repository.
 2. If modifying behaviour, update the interface signature first, then the implementation.
-3. Add or update the corresponding test. Controller tests use MockMvc + Mockito (no Spring context). Repository tests use H2 via `BaseRepositoryIntegrationTest`.
+3. Add or update the corresponding test. Controller tests use MockMvc + MockK (no Spring context). Repository tests use H2 via `BaseRepositoryIntegrationTest`.
 4. Run tests before finishing: `./gradlew test`.
 
 ### Database changes
@@ -91,6 +91,7 @@ dev test          # run tests
 
 ## What to avoid
 
+- Do not use star imports (`import foo.*`). Always list each import explicitly.
 - Do not create or modify files outside the project unless explicitly asked.
 - Do not run `./transaction-authorizer.sh --purge-cache` or `docker compose down -v` without confirming with the user — it deletes all local data.
 - Do not run `--first-data-charge` without confirming — it truncates and re-seeds all tables.

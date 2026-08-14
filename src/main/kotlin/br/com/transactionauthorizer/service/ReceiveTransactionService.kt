@@ -1,7 +1,7 @@
-package br.com.transactionauthorizer.service;
+package br.com.transactionauthorizer.service
 
-import br.com.transactionauthorizer.controller.model.request.ReceivedTransactionRequest;
+import br.com.transactionauthorizer.model.TransactionCommand
 
 interface ReceiveTransactionService {
-    fun receiveTransaction(request:ReceivedTransactionRequest): String
+    fun receiveTransaction(command: TransactionCommand): String
 }

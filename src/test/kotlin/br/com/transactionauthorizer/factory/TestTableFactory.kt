@@ -2,14 +2,14 @@ package br.com.transactionauthorizer.factory
 
 import br.com.transactionauthorizer.model.AccountBalanceType
 import br.com.transactionauthorizer.model.CardTransactionStatus
-import br.com.transactionauthorizer.model.table.AccountBalanceTable
-import br.com.transactionauthorizer.model.table.AccountTable
-import br.com.transactionauthorizer.model.table.CardTransactionTable
+import br.com.transactionauthorizer.repository.table.AccountBalanceTable
+import br.com.transactionauthorizer.repository.table.AccountTable
+import br.com.transactionauthorizer.repository.table.CardTransactionTable
 import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.math.BigDecimal
 import java.time.LocalDateTime
-import java.util.*
+import java.util.UUID
 
 object TestTableFactory {
 

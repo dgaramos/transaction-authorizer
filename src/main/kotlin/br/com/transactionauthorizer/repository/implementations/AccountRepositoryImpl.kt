@@ -2,7 +2,7 @@ package br.com.transactionauthorizer.repository.implementations
 
 import br.com.transactionauthorizer.exceptions.AccountNotFoundByIdException
 import br.com.transactionauthorizer.model.Account
-import br.com.transactionauthorizer.model.table.AccountTable
+import br.com.transactionauthorizer.repository.table.AccountTable
 import br.com.transactionauthorizer.repository.AccountRepository
 import br.com.transactionauthorizer.repository.BaseRepository
 import org.jetbrains.exposed.sql.insertAndGetId

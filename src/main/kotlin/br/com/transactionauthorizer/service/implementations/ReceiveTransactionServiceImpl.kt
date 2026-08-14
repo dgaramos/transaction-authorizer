@@ -1,10 +1,11 @@
 package br.com.transactionauthorizer.service.implementations
 
-import br.com.transactionauthorizer.controller.model.request.ReceivedTransactionRequest
 import br.com.transactionauthorizer.exceptions.AccountBalanceNotFoundByAccountIdAndTypeException
 import br.com.transactionauthorizer.model.AccountBalance
 import br.com.transactionauthorizer.model.AccountBalanceType
 import br.com.transactionauthorizer.model.CardTransactionStatus
+import br.com.transactionauthorizer.model.TransactionCommand
+import br.com.transactionauthorizer.model.TransactionStatus
 import br.com.transactionauthorizer.service.CardTransactionService
 import br.com.transactionauthorizer.service.AccountBalanceService
 import br.com.transactionauthorizer.service.AccountService
@@ -13,13 +14,7 @@ import br.com.transactionauthorizer.utils.AccountBalanceTypeUtils
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
 import org.springframework.transaction.annotation.Transactional
-import java.util.*
-
-enum class TransactionStatus(val code: String) {
-    APPROVED("00"),
-    DENIED("51"),
-    ERROR("07");
-}
+import java.util.UUID
 
 @Service
 class ReceiveTransactionServiceImpl(
@@ -28,25 +23,25 @@ class ReceiveTransactionServiceImpl(
     private val accountService: AccountService
 ) : ReceiveTransactionService {
 
-    override fun receiveTransaction(request: ReceivedTransactionRequest): String {
-        val accountId = UUID.fromString(request.account)
-        val transactionAmount = request.totalAmount
-        val accountBalanceType = AccountBalanceTypeUtils.determineBalanceType(request.merchant, request.mcc)
+    override fun receiveTransaction(command: TransactionCommand): String {
+        val accountId = UUID.fromString(command.account)
+        val transactionAmount = command.totalAmount
+        val accountBalanceType = AccountBalanceTypeUtils.determineBalanceType(command.merchant, command.mcc)
 
         return try {
             val account = accountService.getAccountById(accountId)
-            if (accountBalanceType.isCash()){
-                processCashTransaction(account.id, transactionAmount, request)
+            if (accountBalanceType.isCash()) {
+                processCashTransaction(account.id, transactionAmount, command)
             } else {
                 val accountBalance = accountBalanceService.getAccountBalanceByAccountIdAndType(
                     accountId = account.id,
                     type = accountBalanceType
                 )
-                processTransaction(accountBalance, transactionAmount, request, account.id)
+                processTransaction(accountBalance, transactionAmount, command, account.id)
             }
 
         } catch (ex: AccountBalanceNotFoundByAccountIdAndTypeException) {
-            processCashTransaction(accountId, transactionAmount, request)
+            processCashTransaction(accountId, transactionAmount, command)
         } catch (ex: Exception) {
             TransactionStatus.ERROR.code
         }
@@ -56,7 +51,7 @@ class ReceiveTransactionServiceImpl(
     private fun processTransaction(
         accountBalance: AccountBalance,
         transactionAmount: BigDecimal,
-        request: ReceivedTransactionRequest,
+        request: TransactionCommand,
         accountId: UUID
     ): String {
         return when {
@@ -68,7 +63,7 @@ class ReceiveTransactionServiceImpl(
     private fun processCashTransaction(
         accountId: UUID,
         transactionAmount: BigDecimal,
-        request: ReceivedTransactionRequest,
+        request: TransactionCommand,
         originalAccountBalance: AccountBalance? = null,
     ) = try {
         val cashAccountBalance = getCashAccountBalance(accountId)
@@ -88,7 +83,7 @@ class ReceiveTransactionServiceImpl(
     }
 
     @Transactional
-    private fun updateBalance(accountBalance: AccountBalance, request: ReceivedTransactionRequest): String {
+    private fun updateBalance(accountBalance: AccountBalance, request: TransactionCommand): String {
         cardTransactionService.createTransaction(
             account = request.account,
             totalAmount = request.totalAmount,
@@ -102,7 +97,7 @@ class ReceiveTransactionServiceImpl(
         return TransactionStatus.APPROVED.code
     }
 
-    private fun denyTransaction(accountBalance: AccountBalance, request: ReceivedTransactionRequest): String {
+    private fun denyTransaction(accountBalance: AccountBalance, request: TransactionCommand): String {
         cardTransactionService.createTransaction(
             account = request.account,
             totalAmount = request.totalAmount,

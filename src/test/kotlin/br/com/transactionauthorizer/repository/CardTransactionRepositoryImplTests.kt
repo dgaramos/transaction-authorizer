@@ -5,10 +5,17 @@ import br.com.transactionauthorizer.model.CardTransactionStatus
 import br.com.transactionauthorizer.repository.implementations.CardTransactionRepositoryImpl
 import br.com.transactionauthorizer.support.PostgresTestContainer
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.junit.jupiter.api.*
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Order
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 import java.math.BigDecimal
-import java.util.*
+import java.util.UUID
 
 @Order(10)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)

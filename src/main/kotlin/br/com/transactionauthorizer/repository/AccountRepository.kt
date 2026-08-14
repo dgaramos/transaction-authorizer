@@ -1,7 +1,7 @@
 package br.com.transactionauthorizer.repository
 
 import br.com.transactionauthorizer.model.Account
-import java.util.*
+import java.util.UUID
 
 interface AccountRepository {
 

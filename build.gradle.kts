@@ -52,10 +52,12 @@ dependencies {
 
 	// Testing dependencies
 	testImplementation("org.springframework.boot:spring-boot-starter-test") {
-		exclude(group = "org.junit.vintage") // Exclude JUnit 4 support if not needed
+		exclude(group = "org.junit.vintage")
+		exclude(group = "org.mockito")
+		exclude(group = "org.mockito.kotlin")
 	}
-	testImplementation("org.junit.jupiter:junit-jupiter:5.10.0") // Unified JUnit 5 version
-	testImplementation("org.jetbrains.kotlin:kotlin-test") // Kotlin test utilities
+	testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
+	testImplementation("org.jetbrains.kotlin:kotlin-test")
 	testImplementation("io.mockk:mockk:1.13.12")
 	testImplementation("org.testcontainers:testcontainers:1.19.3")
 	testImplementation("org.testcontainers:postgresql:1.19.3")

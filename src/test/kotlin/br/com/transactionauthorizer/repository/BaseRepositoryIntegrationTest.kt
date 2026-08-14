@@ -2,14 +2,17 @@ package br.com.transactionauthorizer.repository
 
 import br.com.transactionauthorizer.exceptions.OptimisticLockException
 import br.com.transactionauthorizer.model.BaseModel
-import br.com.transactionauthorizer.model.table.BaseTable
+import br.com.transactionauthorizer.repository.table.BaseTable
 import br.com.transactionauthorizer.support.AbstractSpringIntegrationTest
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.deleteAll
 import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Order
