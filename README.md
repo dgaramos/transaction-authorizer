@@ -1,5 +1,7 @@
 # Transaction Authorizer
 
+[![CI](https://github.com/dgaramos/transaction-authorizer/actions/workflows/ci.yml/badge.svg)](https://github.com/dgaramos/transaction-authorizer/actions/workflows/ci.yml)
+
 This is an example **transaction authorization system** that validates and stores pseudo credit card transactions of a benefit club which has various types of balances (FOOD, MEAL, etc.) and has a miscellaneous type of balance for other types of transactions (CASH).
 
 The system integrates with a **PostgreSQL database** for persistence and exposes a **REST API** for external interaction. All available endpoints can be found in the [**Swagger** documentation](#swagger-documentation).
