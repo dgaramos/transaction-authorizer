@@ -18,7 +18,8 @@ The system integrates with a **PostgreSQL database** for persistence and exposes
 5. **[Swagger Documentation](#swagger-documentation)**
 6. **[Additional Resources](#additional-resources)**
 7. **[Folder Structure](#folder-structure)**
-8. **[Notes](#notes)**
+8. **[Development Reference](#development-reference)**
+9. **[Notes](#notes)**
 
 ---
 
@@ -30,7 +31,7 @@ The Transaction Authorizer Application leverages the following technologies:
 |-------------------------|-------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **Kotlin**             | Primary programming language for development.                                                              | ![Kotlin](https://img.shields.io/badge/Kotlin-0095D5?logo=kotlin&logoColor=white&style=flat-square)                                                   |
 | **Spring Boot**        | Java-based framework for creating web applications and REST APIs.                                          | ![Spring Boot](https://img.shields.io/badge/Spring_Boot-6DB33F?logo=spring-boot&logoColor=white&style=flat-square)                                     |
-| **Java 17 (OpenJDK)**  | Runtime environment ensuring compatibility with modern Java features.                                       | ![Java](https://img.shields.io/badge/Java_17-007396?logo=java&logoColor=white&style=flat-square)                                                      |
+| **Eclipse Temurin 17** | JVM runtime used in Docker containers, ensuring compatibility with modern Java features.                    | ![Java](https://img.shields.io/badge/Java_17-007396?logo=java&logoColor=white&style=flat-square)                                                      |
 | **PostgreSQL**         | Relational database for transaction storage and data persistence.                                          | ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-336791?logo=postgresql&logoColor=white&style=flat-square)                                       |
 | **Gradle**             | Build tool for compiling, testing, and managing dependencies.                                              | ![Gradle](https://img.shields.io/badge/Gradle-02303A?logo=gradle&logoColor=white&style=flat-square)                                                   |
 | **Docker**             | Containerization platform for the application and its dependencies.                                       | ![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white&style=flat-square)                                                   |
@@ -101,19 +102,20 @@ The easiest way to run the project is using the `transaction-authorizer.sh` scri
    ```bash
    ./transaction-authorizer.sh --run-migrations
    ```
- 4. **Start the Project**:
+
+4. **Start the Project**:
    Run the script to build and start the application:
    ```bash
    ./transaction-authorizer.sh --start-application
    ```
 
-4. **Reset Environment**:
+5. **Reset Environment**:
    If you need to purge cache, use the `--purge-cache` option:
    ```bash
    ./transaction-authorizer.sh --purge-cache
    ```
 
-5. **Access the Application**:
+6. **Access the Application**:
    Once started, the application will be available at [http://localhost:8080](http://localhost:8080).
 
 If you encounter issues with the script or want more details on its features, refer to the [Script Usage Guide](docs/SCRIPT_USAGE.md).
@@ -129,7 +131,7 @@ This project includes Swagger for API documentation, allowing you to interact wi
 1. [**Run the application**](#running-the-project).
 2. Open your browser and go to:
    ```
-   http://localhost:8080/swagger-ui.html
+   http://localhost:8080/swagger-ui/index.html
    ```
    From here, you can explore and test API endpoints.
 
@@ -153,13 +155,26 @@ For more detailed instructions on using Swagger and exporting to Postman, see th
 ## Folder Structure
 
 - `src/`: Contains the source code of the Spring Boot application.
-- `run-transaction-authorizer.sh`: The automation script for building and running the application.
-- `build.gradle`: The Gradle build file for the project.
-- `application.properties`: The configuration file for Spring Boot.
+- `transaction-authorizer.sh`: The automation script for building and running the application.
+- `build.gradle.kts`: The Gradle build file for the project.
+- `src/main/resources/application.properties`: The configuration file for Spring Boot.
+- `compose.yaml`: Docker Compose configuration for PostgreSQL and the application.
+- `Dockerfile`: Container definition for the Spring Boot application.
+- `CLAUDE.md`: Architecture reference and development rules for AI assistants and developers.
+- `AGENTS.md`: Behavioural constraints and task guidance for AI agents.
 - `docs/`: Contains all the documentation files, including:
    - `MANUAL_SETUP.md`: Guide for manually running the project.
    - `INTELLIJ_SETUP.md`: Guide for IntelliJ IDEA usage.
    - `SCRIPT_USAGE.md`: Guide for using the provided script.
+
+---
+
+## Development Reference
+
+The project follows a layered architecture (controller → service → repository) with interface/implementation separation at every layer. Commits use [Conventional Commits](https://www.conventionalcommits.org/) and branches follow the same `type/description` pattern.
+
+- **[CLAUDE.md](CLAUDE.md)**: architecture overview, layering rules, migration policy, git conventions.
+- **[AGENTS.md](AGENTS.md)**: guidance for AI agents working in this codebase.
 
 ---
 
