@@ -3,6 +3,7 @@ package br.com.transactionauthorizer.factory
 import br.com.transactionauthorizer.model.*
 import java.math.BigDecimal
 import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 import java.util.*
 
 object TestModelFactory {
@@ -11,7 +12,8 @@ object TestModelFactory {
         id: UUID = UUID.randomUUID(),
         name: String = "Test Account"
     ): Account {
-        return Account(id = id, name = name)
+        val now = LocalDateTime.now().truncatedTo(ChronoUnit.MICROS)
+        return Account(id = id, name = name, createdAt = now, updatedAt = now)
     }
 
     fun buildAccountBalance(
