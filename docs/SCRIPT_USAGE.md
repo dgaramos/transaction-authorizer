@@ -1,6 +1,6 @@
-# Script Usage Guide: `run-transaction-authorizer.sh`
+# Script Usage Guide: `transaction-authorizer.sh`
 
-This guide explains how to use the provided script, `run-transaction-authorizer.sh`, to manage the **Transaction Authorizer** application.
+This guide explains how to use the provided script, `transaction-authorizer.sh`, to manage the **Transaction Authorizer** application.
 
 ---
 
@@ -23,12 +23,13 @@ Before running the script, ensure that the following are set up:
 
 The script provides a set of commands for building, testing, managing the database, and running the application.
 
-### 1. **Default Command** (Start the Application)
+### 1. **Start Application** (Recommended)
 To build, test, and start the application (including PostgreSQL and the Spring Boot service):
    ```bash
-   ./transaction-authorizer.sh
+   ./transaction-authorizer.sh --start-application
    ```
 This command performs the following:
+- Verifies Docker login status and network connectivity.
 - Builds the application using Gradle.
 - Runs tests to ensure that the application is working correctly.
 - Starts Docker containers for PostgreSQL and the Spring Boot application.
@@ -59,7 +60,7 @@ This command only cleans local folders and doesn't affect Docker containers or v
 ### 4. **Full Purge (Folders + Cache)**
 To remove both the cached Docker resources and temporary folders, and restart the application:
    ```bash
-   ./transaction-authorizer.sh --purge-folders-and-cache
+   ./transaction-authorizer.sh --purge-folders-and-cache-and-restart-application
    ```
 This command will:
 - Purge both Docker containers/volumes and temporary folders (`build` and Docker credentials).
@@ -162,5 +163,5 @@ If you experience network issues, ensure you have a stable internet connection f
 ## Notes
 
 - The script is designed for both **local development** and **initial deployments**. It's especially useful for testing and running the application in a Dockerized environment.
-- For manual setup or further configuration, refer to the [Manual Setup Guide](docs/MANUAL_SETUP.md).
-- For IntelliJ IDEA setup, see the [IntelliJ Setup Guide](docs/INTELLIJ_SETUP.md).
+- For manual setup or further configuration, refer to the [Manual Setup Guide](MANUAL_SETUP.md).
+- For IntelliJ IDEA setup, see the [IntelliJ Setup Guide](INTELLIJ_SETUP.md).

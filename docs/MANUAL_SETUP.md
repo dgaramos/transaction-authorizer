@@ -84,7 +84,7 @@ To stop and clean up the environment:
 #### Notes
 
 - **Database Configuration**:  
-  By default, the application connects to a PostgreSQL instance defined in `docker-compose.yaml`. If you're running PostgreSQL outside Docker, update the database credentials in `application.properties` or `application.yml`.
+  By default, the application connects to a PostgreSQL instance defined in `compose.yaml`. If you're running PostgreSQL outside Docker, update the database credentials in `src/main/resources/application.properties`.
 
 - **Custom Gradle Commands**:  
   If you need to skip tests or use additional build options, modify the Gradle command accordingly. For example:
