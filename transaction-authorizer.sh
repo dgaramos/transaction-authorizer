@@ -65,9 +65,9 @@ first_data_charge() {
 purge_folders() {
   echo "Purging -r build and ~/.docker/config.json..."
 
-  rm -r build
+  rm -rf build
 
-  rm ~/.docker/config.json
+  rm -f ~/.docker/config.json
 
   echo "Folders -r build and ~/.docker/config.json purged."
 }
@@ -76,15 +76,11 @@ purge_folders() {
 purge_cache() {
   echo "Purging Docker containers and volumes..."
 
-  # Stop and remove containers
-  docker compose down
+  # Stop and remove containers, networks, and project-specific volumes
+  docker compose down -v
 
-  # Remove volumes to ensure a fresh start
-  docker volume prune -f
-  docker network prune -f
-
-  rm -r build
-  rm ~/.docker/config.json
+  rm -rf build
+  rm -f ~/.docker/config.json
 
   echo "Docker containers and volumes purged."
 }
@@ -120,7 +116,7 @@ check_network_connectivity() {
   echo "Checking Docker network connectivity..."
 
   # Test pulling an image to check network connectivity
-  if ! docker pull openjdk:17-jdk-slim; then
+  if ! docker pull hello-world; then
     echo "Failed to pull the image. Check your network connection."
     exit 1
   else
@@ -133,7 +129,7 @@ start_database() {
   echo "Building and starting the PostgreSQL database container..."
 
   # Build and start the Docker containers for the database
-  docker compose up -d postgres
+  docker compose up -d postgres-dev
 
   echo "Database container started successfully!"
 }
@@ -196,7 +192,7 @@ case "$1" in
     ;;
 
   *)
-    echo "Usage: $0 {--purge-folders-and-cache|--purge-cache|--purge-folders|--run-migrations|--clean-database|--rebuild-database|--first-data-charge|--start-application}"
+    echo "Usage: $0 {--start-database|--start-application|--run-migrations|--rebuild-database|--clean-database|--first-data-charge|--purge-cache|--purge-folders|--purge-folders-and-cache-and-restart-application}"
     exit 1
     ;;
 esac
