@@ -10,7 +10,6 @@ import br.com.transactionauthorizer.service.CardTransactionService
 import br.com.transactionauthorizer.service.AccountBalanceService
 import br.com.transactionauthorizer.service.AccountService
 import br.com.transactionauthorizer.service.ReceiveTransactionService
-import br.com.transactionauthorizer.utils.AccountBalanceTypeUtils
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
 import org.springframework.transaction.annotation.Transactional
@@ -26,7 +25,7 @@ class ReceiveTransactionServiceImpl(
     override fun receiveTransaction(command: TransactionCommand): String {
         val accountId = UUID.fromString(command.account)
         val transactionAmount = command.totalAmount
-        val accountBalanceType = AccountBalanceTypeUtils.determineBalanceType(command.merchant, command.mcc)
+        val accountBalanceType = command.resolveBalanceType()
 
         return try {
             val account = accountService.getAccountById(accountId)

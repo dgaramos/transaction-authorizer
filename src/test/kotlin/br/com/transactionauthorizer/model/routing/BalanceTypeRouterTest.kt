@@ -1,36 +1,34 @@
-package br.com.transactionauthorizer.utils
+package br.com.transactionauthorizer.model.routing
 
-import br.com.transactionauthorizer.constants.MccLists
-import br.com.transactionauthorizer.constants.MerchantNames
 import br.com.transactionauthorizer.model.AccountBalanceType
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 
-class AccountBalanceTypeUtilsTest {
+class BalanceTypeRouterTest {
 
     companion object {
         @JvmStatic
         fun merchantAndMccData() = buildList {
             val cashMCCExample = "9999"
 
-            MerchantNames.FOOD_MERCHANTS.forEach { merchant ->
-                MccLists.MEAL_MCCS.plus(cashMCCExample).forEach { mcc ->
+            MerchantRegistry.FOOD.forEach { merchant ->
+                MccRegistry.MEAL.plus(cashMCCExample).forEach { mcc ->
                     add(arrayOf(merchant, mcc, AccountBalanceType.FOOD))
                 }
             }
 
-            MerchantNames.MEAL_MERCHANTS.forEach { merchant ->
-                MccLists.FOOD_MCCS.plus(cashMCCExample).forEach { mcc ->
+            MerchantRegistry.MEAL.forEach { merchant ->
+                MccRegistry.FOOD.plus(cashMCCExample).forEach { mcc ->
                     add(arrayOf(merchant, mcc, AccountBalanceType.MEAL))
                 }
             }
 
-            MccLists.MEAL_MCCS.forEach { mcc ->
+            MccRegistry.MEAL.forEach { mcc ->
                 add(arrayOf("Unknown Merchant", mcc, AccountBalanceType.MEAL))
             }
 
-            MccLists.FOOD_MCCS.forEach { mcc ->
+            MccRegistry.FOOD.forEach { mcc ->
                 add(arrayOf("Unknown Merchant", mcc, AccountBalanceType.FOOD))
             }
 
@@ -45,7 +43,7 @@ class AccountBalanceTypeUtilsTest {
         mcc: String,
         expectedBalanceType: AccountBalanceType
     ) {
-        val result = AccountBalanceTypeUtils.determineBalanceType(merchantName, mcc)
+        val result = BalanceTypeRouter.resolve(merchantName, mcc)
         assertEquals(expectedBalanceType, result)
     }
 }

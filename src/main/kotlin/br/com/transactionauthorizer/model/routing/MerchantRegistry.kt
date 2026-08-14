@@ -1,8 +1,8 @@
-package br.com.transactionauthorizer.constants
+package br.com.transactionauthorizer.model.routing
 
-object MerchantNames {
+internal object MerchantRegistry {
 
-    val MEAL_MERCHANTS = listOf(
+    val MEAL = listOf(
         "PICPAY*BILHETEUNICO           GOIANIA BR",
         "PICPAY*BILHETEUNICO           RIO DE JANEIRO BR",
         "PICPAY*BILHETEUNICO           SAO PAULO BR",
@@ -24,7 +24,7 @@ object MerchantNames {
         "PICPAY*BILHETEUNICO           TERESINA BR"
     )
 
-    val FOOD_MERCHANTS = listOf(
+    val FOOD = listOf(
         "SUPERMERCADO DA TERRA  SAO PAULO BR",
         "HORTIFRUTI LIMA       RIO DE JANEIRO BR",
         "MERCADO ALVORADA      BELO HORIZONTE BR",

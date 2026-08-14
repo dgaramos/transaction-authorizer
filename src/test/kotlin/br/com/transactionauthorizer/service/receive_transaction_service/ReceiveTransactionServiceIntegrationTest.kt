@@ -1,6 +1,6 @@
 package br.com.transactionauthorizer.service.receive_transaction_service
 
-import br.com.transactionauthorizer.constants.MccLists.MEAL_MCCS
+import br.com.transactionauthorizer.model.routing.MccRegistry
 import br.com.transactionauthorizer.factory.TestTableFactory
 import br.com.transactionauthorizer.model.TransactionCommand
 import br.com.transactionauthorizer.model.AccountBalanceType
@@ -80,7 +80,7 @@ class ReceiveTransactionServiceIntegrationTest(
         val request = TransactionCommand(
             account = accountId.toString(),
             totalAmount = BigDecimal(50),
-            mcc = MEAL_MCCS.first(),
+            mcc = MccRegistry.MEAL.first(),
             merchant = "TestMerchant"
         )
 
@@ -115,7 +115,7 @@ class ReceiveTransactionServiceIntegrationTest(
         val request = TransactionCommand(
             account = accountId.toString(),
             totalAmount = BigDecimal(50),
-            mcc = MEAL_MCCS.first(),
+            mcc = MccRegistry.MEAL.first(),
             merchant = "TestMerchant"
         )
 
