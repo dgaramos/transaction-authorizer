@@ -5,14 +5,14 @@ import br.com.transactionauthorizer.factory.TestModelFactory
 import br.com.transactionauthorizer.factory.TestTableFactory
 import br.com.transactionauthorizer.model.table.AccountTable
 import br.com.transactionauthorizer.repository.implementations.AccountRepositoryImpl
-import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.SchemaUtils
+import br.com.transactionauthorizer.support.PostgresTestContainer
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import java.util.*
 
+@Order(10)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AccountRepositoryImplTest {
 
@@ -20,22 +20,14 @@ class AccountRepositoryImplTest {
 
     @BeforeAll
     fun setup() {
-        // Initialize H2 in-memory database
-        Database.connect("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;", driver = "org.h2.Driver")
-        transaction {
-            SchemaUtils.create(AccountTable)
-        }
+        PostgresTestContainer.connect()
         repository = AccountRepositoryImpl()
     }
 
     @AfterEach
     fun tearDown() {
-        // Clean up database after each test
         transaction {
-            SchemaUtils.drop(AccountTable)
-        }
-        transaction {
-            SchemaUtils.create(AccountTable)
+            exec("TRUNCATE TABLE card_transaction, account_balance, account CASCADE")
         }
     }
 

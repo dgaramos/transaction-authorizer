@@ -3,17 +3,15 @@ package br.com.transactionauthorizer.repository
 import br.com.transactionauthorizer.exceptions.*
 import br.com.transactionauthorizer.factory.TestTableFactory
 import br.com.transactionauthorizer.model.AccountBalanceType
-import br.com.transactionauthorizer.model.table.AccountBalanceTable
-import br.com.transactionauthorizer.model.table.AccountTable
 import br.com.transactionauthorizer.repository.implementations.AccountBalanceRepositoryImpl
-import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.SchemaUtils
+import br.com.transactionauthorizer.support.PostgresTestContainer
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.*
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.*
 
+@Order(10)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AccountBalanceRepositoryImplTest {
 
@@ -21,29 +19,20 @@ class AccountBalanceRepositoryImplTest {
 
     @BeforeAll
     fun setup() {
-        // Connect to an in-memory H2 database
-        Database.connect("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;", driver = "org.h2.Driver")
-        transaction {
-            SchemaUtils.create(AccountTable)
-            SchemaUtils.create(AccountBalanceTable)
-        }
+        PostgresTestContainer.connect()
         repository = AccountBalanceRepositoryImpl()
     }
 
     @AfterEach
     fun tearDown() {
-        // Clean up the database after each test
         transaction {
-            SchemaUtils.drop(AccountTable)
-            SchemaUtils.drop(AccountBalanceTable)
-            SchemaUtils.create(AccountTable)
-            SchemaUtils.create(AccountBalanceTable)
+            exec("TRUNCATE TABLE card_transaction, account_balance, account CASCADE")
         }
     }
 
     @Test
     fun `test upsert account balance`() {
-        val accountId = UUID.randomUUID()
+        val accountId = TestTableFactory.createAccount()
         val balanceType = AccountBalanceType.CASH
         val amount = BigDecimal(0).setScale(2, RoundingMode.HALF_UP)
 
@@ -57,7 +46,7 @@ class AccountBalanceRepositoryImplTest {
 
     @Test
     fun `test upsert account balance returns already existing account balance`() {
-        val accountId = UUID.randomUUID()
+        val accountId = TestTableFactory.createAccount()
         val balanceType = AccountBalanceType.CASH
         val amount = BigDecimal("100.00")
 
@@ -78,7 +67,7 @@ class AccountBalanceRepositoryImplTest {
 
     @Test
     fun `test get account balance by ID`() {
-        val accountId = UUID.randomUUID()
+        val accountId = TestTableFactory.createAccount()
         val balanceType = AccountBalanceType.MEAL
         val amount = BigDecimal("100.00")
 
@@ -108,7 +97,7 @@ class AccountBalanceRepositoryImplTest {
 
     @Test
     fun `test get account balance by account ID and type`() {
-        val accountId = UUID.randomUUID()
+        val accountId = TestTableFactory.createAccount()
         val balanceType = AccountBalanceType.MEAL
         val amount = BigDecimal("100.00")
 
@@ -141,7 +130,7 @@ class AccountBalanceRepositoryImplTest {
 
     @Test
     fun `test get account balances by account ID`() {
-        val accountId = UUID.randomUUID()
+        val accountId = TestTableFactory.createAccount()
 
         TestTableFactory.createAccountBalance(
             accountId = accountId,

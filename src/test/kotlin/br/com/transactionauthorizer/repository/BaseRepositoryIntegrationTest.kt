@@ -3,14 +3,16 @@ package br.com.transactionauthorizer.repository
 import br.com.transactionauthorizer.exceptions.OptimisticLockException
 import br.com.transactionauthorizer.model.BaseModel
 import br.com.transactionauthorizer.model.table.BaseTable
-import org.jetbrains.exposed.sql.Database
+import br.com.transactionauthorizer.support.AbstractSpringIntegrationTest
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.deleteAll
 import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -76,10 +78,11 @@ class TestRepository : BaseRepository<TestModel, TestTable>(
         super.findAll(offset, limit)
 }
 
+@Order(1)
 @ActiveProfiles("test")
 @SpringBootTest
 @Transactional
-class BaseRepositoryIntegrationTest {
+class BaseRepositoryIntegrationTest : AbstractSpringIntegrationTest() {
 
     @Autowired
     lateinit var testRepository: TestRepository
@@ -179,14 +182,14 @@ class BaseRepositoryIntegrationTest {
     companion object {
         @JvmStatic
         @BeforeAll
-        fun setup() {
-            // Connect to in-memory database for testing
-            Database.connect("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;", driver = "org.h2.Driver")
+        fun setupTestTable() {
+            transaction { SchemaUtils.create(TestTable) }
+        }
 
-            transaction {
-                // Create the tables for testing
-                SchemaUtils.create(TestTable)
-            }
+        @JvmStatic
+        @AfterAll
+        fun tearDownTestTable() {
+            transaction { SchemaUtils.drop(TestTable) }
         }
     }
 }

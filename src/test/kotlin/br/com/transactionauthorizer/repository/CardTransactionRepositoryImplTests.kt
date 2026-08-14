@@ -2,15 +2,15 @@ package br.com.transactionauthorizer.repository
 
 import br.com.transactionauthorizer.factory.TestTableFactory
 import br.com.transactionauthorizer.model.CardTransactionStatus
-import br.com.transactionauthorizer.model.table.CardTransactionTable
 import br.com.transactionauthorizer.repository.implementations.CardTransactionRepositoryImpl
-import org.jetbrains.exposed.sql.*
+import br.com.transactionauthorizer.support.PostgresTestContainer
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
 import java.math.BigDecimal
 import java.util.*
 
+@Order(10)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CardTransactionRepositoryImplTests {
 
@@ -18,68 +18,68 @@ class CardTransactionRepositoryImplTests {
 
     @BeforeAll
     fun setup() {
-        Database.connect("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;", driver = "org.h2.Driver")
-
-        transaction {
-            SchemaUtils.create(CardTransactionTable)
-        }
-
+        PostgresTestContainer.connect()
         cardTransactionRepository = CardTransactionRepositoryImpl()
     }
 
     @AfterEach
     fun tearDown() {
         transaction {
-            SchemaUtils.drop(CardTransactionTable)
-        }
-
-        transaction {
-            SchemaUtils.create(CardTransactionTable)
+            exec("TRUNCATE TABLE card_transaction, account_balance, account CASCADE")
         }
     }
 
     @Test
     fun `should insert a new transaction and retrieve it`() {
-        val account = UUID.randomUUID().toString()
+        val accountId = TestTableFactory.createAccount()
+        val balanceId = TestTableFactory.createAccountBalance(accountId = accountId)
         val totalAmount = BigDecimal(150.00)
         val mcc = "5811"
         val cardTransactionStatus = CardTransactionStatus.APPROVED
         val merchant = "PADARIA DO ZE - SAO PAULO BR"
 
         TestTableFactory.createCardTransaction(
-            account = account,
+            account = accountId.toString(),
+            accountId = accountId,
+            accountBalanceId = balanceId,
             totalAmount = totalAmount,
             mcc = mcc,
             cardTransactionStatus = cardTransactionStatus,
             merchant = merchant
         )
 
-        val retrievedTransactions = cardTransactionRepository.getAllTransactionsByAccountId(UUID.fromString(account), 0, 10)
+        val retrievedTransactions = cardTransactionRepository.getAllTransactionsByAccountId(accountId, 0, 10)
 
         assertNotNull(retrievedTransactions)
         assertEquals(1, retrievedTransactions.size)
-        assertEquals(account, retrievedTransactions.first().account)
+        assertEquals(accountId.toString(), retrievedTransactions.first().account)
     }
 
     @Test
     fun `should return all transactions by account Id with descending order`() {
-        val account = UUID.randomUUID().toString()
+        val accountId = TestTableFactory.createAccount()
+        val balanceId = TestTableFactory.createAccountBalance(accountId = accountId)
+
         TestTableFactory.createCardTransaction(
-            account = account,
+            account = accountId.toString(),
+            accountId = accountId,
+            accountBalanceId = balanceId,
             totalAmount = BigDecimal(100.00),
             mcc = "5811",
             cardTransactionStatus = CardTransactionStatus.APPROVED,
             merchant = "Merchant A"
         )
         TestTableFactory.createCardTransaction(
-            account = account,
+            account = accountId.toString(),
+            accountId = accountId,
+            accountBalanceId = balanceId,
             totalAmount = BigDecimal(200.00),
             mcc = "5411",
             cardTransactionStatus = CardTransactionStatus.DENIED,
             merchant = "Merchant B"
         )
 
-        val transactions = cardTransactionRepository.getAllTransactionsByAccountId(UUID.fromString(account), 0, 10)
+        val transactions = cardTransactionRepository.getAllTransactionsByAccountId(accountId, 0, 10)
 
         assertEquals(2, transactions.size)
         assertTrue(transactions[0].createdAt > transactions[1].createdAt)
@@ -87,10 +87,14 @@ class CardTransactionRepositoryImplTests {
 
     @Test
     fun `should paginate transactions by account Id`() {
-        val account = UUID.randomUUID().toString()
+        val accountId = TestTableFactory.createAccount()
+        val balanceId = TestTableFactory.createAccountBalance(accountId = accountId)
+
         repeat(15) {
             TestTableFactory.createCardTransaction(
-                account = account,
+                account = accountId.toString(),
+                accountId = accountId,
+                accountBalanceId = balanceId,
                 totalAmount = BigDecimal(100 + it),
                 mcc = "581${it % 10}",
                 cardTransactionStatus = CardTransactionStatus.APPROVED,
@@ -98,8 +102,8 @@ class CardTransactionRepositoryImplTests {
             )
         }
 
-        val transactionsPage1 = cardTransactionRepository.getAllTransactionsByAccountId(UUID.fromString(account), 0, 5)
-        val transactionsPage2 = cardTransactionRepository.getAllTransactionsByAccountId(UUID.fromString(account), 5, 5)
+        val transactionsPage1 = cardTransactionRepository.getAllTransactionsByAccountId(accountId, 0, 5)
+        val transactionsPage2 = cardTransactionRepository.getAllTransactionsByAccountId(accountId, 5, 5)
 
         assertEquals(5, transactionsPage1.size)
         assertEquals(5, transactionsPage2.size)
@@ -108,20 +112,24 @@ class CardTransactionRepositoryImplTests {
 
     @Test
     fun `should return all transactions by account balance Id with descending order`() {
-        val accountBalanceId = UUID.randomUUID()
+        val accountId = TestTableFactory.createAccount()
+        val accountBalanceId = TestTableFactory.createAccountBalance(accountId = accountId)
+
         TestTableFactory.createCardTransaction(
-            account = UUID.randomUUID().toString(),
+            account = accountId.toString(),
+            accountId = accountId,
+            accountBalanceId = accountBalanceId,
             totalAmount = BigDecimal(100.00),
             mcc = "5811",
-            accountBalanceId = accountBalanceId,
             cardTransactionStatus = CardTransactionStatus.APPROVED,
             merchant = "Merchant A"
         )
         TestTableFactory.createCardTransaction(
-            account = UUID.randomUUID().toString(),
+            account = accountId.toString(),
+            accountId = accountId,
+            accountBalanceId = accountBalanceId,
             totalAmount = BigDecimal(200.00),
             mcc = "5411",
-            accountBalanceId = accountBalanceId,
             cardTransactionStatus = CardTransactionStatus.DENIED,
             merchant = "Merchant B"
         )
@@ -134,13 +142,16 @@ class CardTransactionRepositoryImplTests {
 
     @Test
     fun `should paginate transactions by account balance Id`() {
-        val accountBalanceId = UUID.randomUUID()
+        val accountId = TestTableFactory.createAccount()
+        val accountBalanceId = TestTableFactory.createAccountBalance(accountId = accountId)
+
         repeat(15) {
             TestTableFactory.createCardTransaction(
-                account = UUID.randomUUID().toString(),
+                account = accountId.toString(),
+                accountId = accountId,
+                accountBalanceId = accountBalanceId,
                 totalAmount = BigDecimal(100 + it),
                 mcc = "581${it % 10}",
-                accountBalanceId = accountBalanceId,
                 cardTransactionStatus = CardTransactionStatus.APPROVED,
                 merchant = "Merchant $it"
             )

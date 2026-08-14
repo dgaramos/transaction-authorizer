@@ -58,11 +58,12 @@ dependencies {
 	testImplementation("org.jetbrains.kotlin:kotlin-test") // Kotlin test utilities
 	testImplementation("org.mockito.kotlin:mockito-kotlin:4.1.0") // Latest Mockito Kotlin
 	testImplementation("org.mockito:mockito-core:4.11.0") // Latest Mockito Core
-	testImplementation("com.h2database:h2:2.1.214") // In-memory database for tests
+	testImplementation("org.testcontainers:testcontainers:1.19.3")
+	testImplementation("org.testcontainers:postgresql:1.19.3")
+	testImplementation("org.testcontainers:junit-jupiter:1.19.3")
 
 	// Optional runtime dependencies for tests
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.10.0") // Ensure platform compatibility
-	testRuntimeOnly("com.h2database:h2:2.1.214") // H2 runtime for testing
 }
 
 val springDataSourceUrl: String = System.getenv("SPRING_DATASOURCE_URL") ?: "jdbc:postgresql://localhost:5432/demo_db"
