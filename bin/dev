@@ -1,0 +1,172 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+AUTHORIZER="$SCRIPT_DIR/transaction-authorizer.sh"
+
+# ──────────────────────────────────────────────
+# Command registry: "label" → "description"
+# Used to build the fzf menu
+# ──────────────────────────────────────────────
+declare -A DESCRIPTIONS=(
+  ["app start"]="Build, test and start all containers (postgres + application)"
+  ["app stop"]="Stop all running containers"
+  ["app logs"]="Follow application logs"
+  ["app restart"]="Stop and start all containers (no purge)"
+  ["db start"]="Start the PostgreSQL container only"
+  ["db migrate"]="Run Flyway migrations"
+  ["db clean"]="Drop all schema objects via Flyway"
+  ["db rebuild"]="Drop schema and re-run migrations"
+  ["db seed"]="Load initial data from data_init.sql"
+  ["test"]="Run the full test suite"
+  ["build"]="Build the project (skips tests)"
+  ["purge"]="Wipe containers, volumes and build cache, then restart"
+)
+
+# Ordered list for the fzf menu
+ORDERED=(
+  "app start"
+  "app stop"
+  "app logs"
+  "app restart"
+  "db start"
+  "db migrate"
+  "db clean"
+  "db rebuild"
+  "db seed"
+  "test"
+  "build"
+  "purge"
+)
+
+# ──────────────────────────────────────────────
+# Helpers
+# ──────────────────────────────────────────────
+_header() { printf "\033[1;34m▶ %s\033[0m\n" "$*"; }
+_ok()     { printf "\033[1;32m✔ %s\033[0m\n" "$*"; }
+_err()    { printf "\033[1;31m✖ %s\033[0m\n" "$*" >&2; }
+
+_run() {
+  cd "$SCRIPT_DIR"
+  "$AUTHORIZER" "$@"
+}
+
+# ──────────────────────────────────────────────
+# Command implementations
+# ──────────────────────────────────────────────
+cmd_app_start()   { _header "Starting application"; _run --start-application; }
+cmd_app_stop()    { _header "Stopping containers"; cd "$SCRIPT_DIR" && docker compose down; _ok "Done"; }
+cmd_app_logs()    { cd "$SCRIPT_DIR" && docker compose logs -f application; }
+cmd_app_restart() { _header "Restarting"; cd "$SCRIPT_DIR" && docker compose down && docker compose up -d; _ok "Done"; }
+cmd_db_start()    { _header "Starting database"; _run --start-database; }
+cmd_db_migrate()  { _header "Running migrations"; _run --run-migrations; }
+cmd_db_clean()    { _header "Cleaning database"; _run --clean-database; }
+cmd_db_rebuild()  { _header "Rebuilding database"; _run --rebuild-database; }
+cmd_db_seed()     { _header "Seeding data"; _run --first-data-charge; }
+cmd_test()        { _header "Running tests"; cd "$SCRIPT_DIR" && ./gradlew test; }
+cmd_build()       { _header "Building"; cd "$SCRIPT_DIR" && ./gradlew clean build -x test; }
+cmd_purge()       { _header "Purging cache"; _run --purge-cache; }
+
+# ──────────────────────────────────────────────
+# Dispatch
+# ──────────────────────────────────────────────
+dispatch() {
+  local cmd="${1:-} ${2:-}"
+  cmd="${cmd%% }"  # trim trailing space when only one arg
+
+  case "$cmd" in
+    "app start")   cmd_app_start ;;
+    "app stop")    cmd_app_stop ;;
+    "app logs")    cmd_app_logs ;;
+    "app restart") cmd_app_restart ;;
+    "db start")    cmd_db_start ;;
+    "db migrate")  cmd_db_migrate ;;
+    "db clean")    cmd_db_clean ;;
+    "db rebuild")  cmd_db_rebuild ;;
+    "db seed")     cmd_db_seed ;;
+    "test")        cmd_test ;;
+    "build")       cmd_build ;;
+    "purge")       cmd_purge ;;
+    *)
+      _err "Unknown command: $cmd"
+      usage
+      exit 1
+      ;;
+  esac
+}
+
+usage() {
+  echo ""
+  echo "  Usage: dev <command> [subcommand]"
+  echo ""
+  echo "  Application"
+  echo "    app start      ${DESCRIPTIONS["app start"]}"
+  echo "    app stop       ${DESCRIPTIONS["app stop"]}"
+  echo "    app logs       ${DESCRIPTIONS["app logs"]}"
+  echo "    app restart    ${DESCRIPTIONS["app restart"]}"
+  echo ""
+  echo "  Database"
+  echo "    db start       ${DESCRIPTIONS["db start"]}"
+  echo "    db migrate     ${DESCRIPTIONS["db migrate"]}"
+  echo "    db clean       ${DESCRIPTIONS["db clean"]}"
+  echo "    db rebuild     ${DESCRIPTIONS["db rebuild"]}"
+  echo "    db seed        ${DESCRIPTIONS["db seed"]}"
+  echo ""
+  echo "  Build & Test"
+  echo "    test           ${DESCRIPTIONS["test"]}"
+  echo "    build          ${DESCRIPTIONS["build"]}"
+  echo ""
+  echo "  Utilities"
+  echo "    purge          ${DESCRIPTIONS["purge"]}"
+  echo ""
+  echo "  Run without arguments to open the interactive menu."
+  echo ""
+}
+
+# ──────────────────────────────────────────────
+# Interactive fzf menu (no arguments)
+# ──────────────────────────────────────────────
+interactive_menu() {
+  if ! command -v fzf >/dev/null 2>&1; then
+    _err "fzf not found — install it or pass a command directly"
+    usage
+    exit 1
+  fi
+
+  local entries=()
+  for key in "${ORDERED[@]}"; do
+    entries+=("$(printf "%-20s %s" "$key" "${DESCRIPTIONS[$key]}")")
+  done
+
+  local selected
+  selected=$(printf '%s\n' "${entries[@]}" \
+    | fzf --ansi \
+          --prompt="  dev › " \
+          --height=50% \
+          --border=rounded \
+          --header="Transaction Authorizer — pick a command" \
+          --header-first)
+
+  [[ -z "$selected" ]] && exit 0
+
+  local chosen_cmd
+  chosen_cmd=$(echo "$selected" | awk '{print $1" "$2}' | xargs)
+  # handle single-word commands (test, build, purge)
+  if [[ ! "${DESCRIPTIONS[$chosen_cmd]+_}" ]]; then
+    chosen_cmd=$(echo "$selected" | awk '{print $1}')
+  fi
+
+  echo ""
+  dispatch $chosen_cmd
+}
+
+# ──────────────────────────────────────────────
+# Entry point
+# ──────────────────────────────────────────────
+if [[ $# -eq 0 ]]; then
+  interactive_menu
+elif [[ "$1" == "--help" || "$1" == "-h" ]]; then
+  usage
+else
+  dispatch "$@"
+fi
