@@ -117,16 +117,29 @@ Use `main` as the integration branch. Feature branches are short-lived and merge
 
 ## Running the Project
 
-See `README.md` for the full flow. Quick reference:
+The project ships a `dev` CLI (via `bin/dev` + `.envrc`). When inside the project directory, `direnv` adds `bin/` to `PATH` automatically so `dev` is available without a path prefix.
 
 ```bash
-./transaction-authorizer.sh --start-database       # start PostgreSQL only
-./transaction-authorizer.sh --run-migrations        # run Flyway migrations
-./transaction-authorizer.sh --start-application     # build + test + start all containers
-./transaction-authorizer.sh --first-data-charge     # seed local data
-./transaction-authorizer.sh --rebuild-database      # drop schema and re-migrate
-./transaction-authorizer.sh --purge-cache           # wipe containers/volumes and restart
+dev                  # interactive fzf menu with all commands
+dev --help           # show all available commands
+
+dev app start        # build + test + start all containers
+dev app stop         # stop all containers
+dev app logs         # follow application logs
+dev app restart      # stop and start (no purge)
+
+dev db start         # start PostgreSQL only
+dev db migrate       # run Flyway migrations
+dev db clean         # drop all schema objects
+dev db rebuild       # drop schema and re-run migrations
+dev db seed          # load initial data from data_init.sql
+
+dev test             # run the full test suite
+dev build            # build without running tests
+dev purge            # wipe containers, volumes and cache, then restart
 ```
+
+The underlying `transaction-authorizer.sh` is still available for direct use. See `README.md` for the full setup flow.
 
 The app exposes Swagger UI at `http://localhost:8080/swagger-ui/index.html`.
 

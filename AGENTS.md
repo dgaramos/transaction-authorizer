@@ -65,6 +65,21 @@ Examples: `feat/meal-mcc-expansion`, `fix/optimistic-lock-retry`, `chore/upgrade
 
 ---
 
+## Running commands
+
+Prefer `dev` over calling `transaction-authorizer.sh` directly — it is the intended interface.
+
+```bash
+dev --help        # list all commands
+dev app start     # start the full stack
+dev db migrate    # run migrations
+dev test          # run tests
+```
+
+`dev` is available when inside the project directory (direnv loads `bin/` into PATH via `.envrc`). Outside the directory, use the full path `bin/dev` or call `transaction-authorizer.sh` directly.
+
+---
+
 ## Docker and infrastructure
 
 - PostgreSQL image is pinned to `postgres:16`. Do not change to `latest`.

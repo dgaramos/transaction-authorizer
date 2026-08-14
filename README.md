@@ -160,8 +160,10 @@ For more detailed instructions on using Swagger and exporting to Postman, see th
 - `src/main/resources/application.properties`: The configuration file for Spring Boot.
 - `compose.yaml`: Docker Compose configuration for PostgreSQL and the application.
 - `Dockerfile`: Container definition for the Spring Boot application.
-- `CLAUDE.md`: Architecture reference and development rules for AI assistants and developers.
+- `CLAUDE.md`: Architecture reference, development rules, and `dev` CLI documentation.
 - `AGENTS.md`: Behavioural constraints and task guidance for AI agents.
+- `bin/dev`: Developer CLI wrapping `transaction-authorizer.sh` with `fzf` interactive menu.
+- `.envrc`: direnv config that adds `bin/` to PATH inside the project directory.
 - `docs/`: Contains all the documentation files, including:
    - `MANUAL_SETUP.md`: Guide for manually running the project.
    - `INTELLIJ_SETUP.md`: Guide for IntelliJ IDEA usage.
@@ -173,7 +175,7 @@ For more detailed instructions on using Swagger and exporting to Postman, see th
 
 The project follows a layered architecture (controller → service → repository) with interface/implementation separation at every layer. Commits use [Conventional Commits](https://www.conventionalcommits.org/) and branches follow the same `type/description` pattern.
 
-- **[CLAUDE.md](CLAUDE.md)**: architecture overview, layering rules, migration policy, git conventions.
+- **[CLAUDE.md](CLAUDE.md)**: architecture overview, layering rules, migration policy, git conventions, and `dev` CLI reference.
 - **[AGENTS.md](AGENTS.md)**: guidance for AI agents working in this codebase.
 
 ---
