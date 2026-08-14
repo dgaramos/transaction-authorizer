@@ -1,6 +1,10 @@
 # Transaction Authorizer
 
 [![CI](https://github.com/dgaramos/transaction-authorizer/actions/workflows/ci.yml/badge.svg)](https://github.com/dgaramos/transaction-authorizer/actions/workflows/ci.yml)
+[![Kotlin](https://img.shields.io/badge/Kotlin-1.9.25-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.0-6DB33F?logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![Java](https://img.shields.io/badge/Java-17-ED8B00?logo=openjdk&logoColor=white)](https://adoptium.net)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org)
 
 This is an example **transaction authorization system** that validates and stores pseudo credit card transactions of a benefit club which has various types of balances (FOOD, MEAL, etc.) and has a miscellaneous type of balance for other types of transactions (CASH).
 
