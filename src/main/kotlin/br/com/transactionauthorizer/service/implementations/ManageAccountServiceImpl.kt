@@ -1,14 +1,11 @@
 package br.com.transactionauthorizer.service.implementations
 
-import br.com.transactionauthorizer.controller.model.request.AccountRequest
-import br.com.transactionauthorizer.controller.model.response.AccountListResponse
-import br.com.transactionauthorizer.controller.model.response.AccountResponse
 import br.com.transactionauthorizer.model.AccountBalanceType
+import br.com.transactionauthorizer.model.AccountDetail
+import br.com.transactionauthorizer.model.AccountSummary
 import br.com.transactionauthorizer.service.AccountBalanceService
 import br.com.transactionauthorizer.service.AccountService
 import br.com.transactionauthorizer.service.ManageAccountService
-import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import java.util.UUID
 
@@ -18,26 +15,22 @@ class ManageAccountServiceImpl(
     private val accountBalanceService: AccountBalanceService
 ): ManageAccountService {
 
-    override fun getAllAccounts(offset: Int, limit: Int): ResponseEntity<List<AccountListResponse>> {
-        val response = accountService.getAllAccounts(offset, limit).map { account ->
-            AccountListResponse.fromAccount(account)
+    override fun getAllAccounts(offset: Int, limit: Int): List<AccountSummary> =
+        accountService.getAllAccounts(offset, limit).map { account ->
+            AccountSummary(id = account.id, name = account.name)
         }
-        return ResponseEntity(response, HttpStatus.OK)
-    }
 
-    override fun getAccountById(id: UUID): ResponseEntity<AccountResponse> {
+    override fun getAccountById(id: UUID): AccountDetail {
         val account = accountService.getAccountById(id)
         val balances = accountBalanceService.getAccountBalancesByAccountId(id)
-        val response = AccountResponse.fromAccount(account, balances)
-        return ResponseEntity(response, HttpStatus.OK)
+        return AccountDetail(id = account.id, name = account.name, balances = balances)
     }
 
-    override fun createAccount(accountRequest: AccountRequest): ResponseEntity<AccountResponse> {
-        val account = accountService.createAccount(accountRequest.name)
+    override fun createAccount(name: String): AccountDetail {
+        val account = accountService.createAccount(name)
         val balances = AccountBalanceType.entries.map { balanceType ->
             accountBalanceService.upsertAccountBalance(account.id, balanceType)
         }
-        val response = AccountResponse.fromAccount(account, balances)
-        return ResponseEntity(response, HttpStatus.CREATED)
+        return AccountDetail(id = account.id, name = account.name, balances = balances)
     }
 }

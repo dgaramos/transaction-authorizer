@@ -1,7 +1,6 @@
 package br.com.transactionauthorizer.controller.model.response
 
-import br.com.transactionauthorizer.model.Account
-import br.com.transactionauthorizer.model.AccountBalance
+import br.com.transactionauthorizer.model.AccountDetail
 
 data class AccountResponse(
     val id: String,
@@ -9,11 +8,11 @@ data class AccountResponse(
     val balances: List<AccountBalanceResponse>
 ) {
     companion object {
-        fun fromAccount(account: Account, balances: List<AccountBalance>): AccountResponse {
+        fun fromDetail(detail: AccountDetail): AccountResponse {
             return AccountResponse(
-                id = account.id.toString(),
-                name = account.name,
-                balances = balances.map { AccountBalanceResponse.fromAccountBalance(it) }
+                id = detail.id.toString(),
+                name = detail.name,
+                balances = detail.balances.map { AccountBalanceResponse.fromAccountBalance(it) }
             )
         }
     }

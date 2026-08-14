@@ -7,6 +7,7 @@ import br.com.transactionauthorizer.service.ManageAccountService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.GetMapping
@@ -32,10 +33,8 @@ class AccountController(
         @RequestParam offset: Int = 0,
         @RequestParam limit: Int = 10
     ): ResponseEntity<List<AccountListResponse>> {
-        return manageAccountService.getAllAccounts(
-            offset = offset,
-            limit = limit
-        )
+        val summaries = manageAccountService.getAllAccounts(offset = offset, limit = limit)
+        return ResponseEntity.ok(summaries.map { AccountListResponse.fromSummary(it) })
     }
 
     @Operation(summary = "Get a specific account by ID with all account balances")
@@ -43,7 +42,8 @@ class AccountController(
     fun getAccountById(
         @Parameter(description = "ID of the account to retrieve") @PathVariable id: String
     ): ResponseEntity<AccountResponse> {
-        return manageAccountService.getAccountById(UUID.fromString(id))
+        val detail = manageAccountService.getAccountById(UUID.fromString(id))
+        return ResponseEntity.ok(AccountResponse.fromDetail(detail))
     }
 
     @Operation(summary = "Create a new account")
@@ -51,6 +51,7 @@ class AccountController(
     fun createAccount(
         @Parameter(description = "Request payload for creating a new account") @RequestBody accountRequest: AccountRequest
     ): ResponseEntity<AccountResponse> {
-        return manageAccountService.createAccount(accountRequest)
+        val detail = manageAccountService.createAccount(accountRequest.name)
+        return ResponseEntity.status(HttpStatus.CREATED).body(AccountResponse.fromDetail(detail))
     }
 }

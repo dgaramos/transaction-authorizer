@@ -1,6 +1,5 @@
 package br.com.transactionauthorizer.service
 
-import br.com.transactionauthorizer.controller.model.request.AccountRequest
 import br.com.transactionauthorizer.factory.TestModelFactory
 import br.com.transactionauthorizer.model.AccountBalance
 import br.com.transactionauthorizer.model.AccountBalanceType
@@ -11,7 +10,6 @@ import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.springframework.http.HttpStatus
 import java.util.UUID
 
 class ManageAccountServiceImplTest {
@@ -35,10 +33,10 @@ class ManageAccountServiceImplTest {
         )
         every { accountService.getAllAccounts() } returns accounts
 
-        val response = manageAccountService.getAllAccounts()
+        val summaries = manageAccountService.getAllAccounts()
 
-        assertEquals(HttpStatus.OK, response.statusCode)
-        assertEquals(2, response.body?.size)
+        assertEquals(2, summaries.size)
+        assertEquals("Account 1", summaries[0].name)
         verify(exactly = 1) { accountService.getAllAccounts() }
     }
 
@@ -52,33 +50,30 @@ class ManageAccountServiceImplTest {
         every { accountService.getAccountById(accountId) } returns account
         every { accountBalanceService.getAccountBalancesByAccountId(accountId) } returns balances
 
-        val response = manageAccountService.getAccountById(accountId)
+        val detail = manageAccountService.getAccountById(accountId)
 
-        assertEquals(HttpStatus.OK, response.statusCode)
-        assertEquals("Account 1", response.body?.name)
-        assertEquals(1, response.body?.balances?.size)
+        assertEquals("Account 1", detail.name)
+        assertEquals(1, detail.balances.size)
         verify(exactly = 1) { accountService.getAccountById(accountId) }
         verify(exactly = 1) { accountBalanceService.getAccountBalancesByAccountId(accountId) }
     }
 
     @Test
     fun `should create a new account`() {
-        val accountRequest = AccountRequest(name = "New Account")
-        val account = TestModelFactory.buildAccount(name = accountRequest.name)
+        val account = TestModelFactory.buildAccount(name = "New Account")
         val balances = AccountBalanceType.entries.map { balanceType ->
             TestModelFactory.buildAccountBalance(id = UUID.randomUUID(), accountId = account.id, accountBalanceType = balanceType, amount = 0.toBigDecimal())
         }
-        every { accountService.createAccount(accountRequest.name) } returns account
+        every { accountService.createAccount("New Account") } returns account
         every { accountBalanceService.upsertAccountBalance(account.id, AccountBalanceType.CASH) } returns balances[0]
         every { accountBalanceService.upsertAccountBalance(account.id, AccountBalanceType.FOOD) } returns balances[1]
         every { accountBalanceService.upsertAccountBalance(account.id, AccountBalanceType.MEAL) } returns balances[2]
 
-        val response = manageAccountService.createAccount(accountRequest)
+        val detail = manageAccountService.createAccount("New Account")
 
-        assertEquals(HttpStatus.CREATED, response.statusCode)
-        assertEquals("New Account", response.body?.name)
-        assertEquals(3, response.body?.balances?.size)
-        verify(exactly = 1) { accountService.createAccount(accountRequest.name) }
+        assertEquals("New Account", detail.name)
+        assertEquals(3, detail.balances.size)
+        verify(exactly = 1) { accountService.createAccount("New Account") }
         verify(exactly = 1) { accountBalanceService.upsertAccountBalance(account.id, AccountBalanceType.CASH) }
         verify(exactly = 1) { accountBalanceService.upsertAccountBalance(account.id, AccountBalanceType.MEAL) }
         verify(exactly = 1) { accountBalanceService.upsertAccountBalance(account.id, AccountBalanceType.FOOD) }

@@ -1,16 +1,16 @@
 package br.com.transactionauthorizer.controller.model.response
 
-import br.com.transactionauthorizer.model.Account
+import br.com.transactionauthorizer.model.AccountSummary
 
 data class AccountListResponse(
     val id: String,
     val name: String
 ) {
     companion object {
-        fun fromAccount(account: Account): AccountListResponse {
+        fun fromSummary(summary: AccountSummary): AccountListResponse {
             return AccountListResponse(
-                id = account.id.toString(),
-                name = account.name
+                id = summary.id.toString(),
+                name = summary.name
             )
         }
     }
