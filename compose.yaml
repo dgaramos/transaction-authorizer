@@ -1,6 +1,6 @@
 services:
   postgres-dev:
-    image: 'postgres:latest'
+    image: 'postgres:16'
     environment:
       - 'POSTGRES_DB=demo_db'
       - 'POSTGRES_PASSWORD=dev_database_passwd'

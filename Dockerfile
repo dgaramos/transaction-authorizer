@@ -1,8 +1,8 @@
 # Use an OpenJDK image as the base
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:17-jre-jammy
 
 # Install netcat (nc) for the entrypoint script
-RUN apt-get update && apt-get install -y netcat && apt-get clean
+RUN apt-get update && apt-get install -y netcat-openbsd && apt-get clean
 
 # Set a working directory in the container
 WORKDIR /app
