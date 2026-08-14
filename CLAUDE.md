@@ -10,26 +10,28 @@ The stack is: Kotlin 1.9, Spring Boot 3.4, Jetbrains Exposed (SQL DSL), Flyway, 
 
 ## Architecture
 
-The codebase follows a Hexagonal Architecture (Ports & Adapters). The dependency rule is strict: outer layers depend on inner layers, never the other way around.
+The codebase follows Hexagonal Architecture (Ports & Adapters). The dependency rule is strict: outer layers depend on inner layers, never the other way around.
 
 ```
 controller/              → input adapters (REST)
   model/request/         → inbound DTOs (never cross into service/domain)
   model/response/        → outbound DTOs
-service/                 → application ports (interfaces) + core logic
-  implementations/       → core: concrete service classes (@Service)
-repository/              → output ports (interfaces) + persistence adapters
+service/                 → input ports (interfaces)
+  implementations/       → use case implementations (@Service)
+repository/              → output ports (interfaces)
   implementations/       → persistence adapters: Exposed DSL (@Repository)
   table/                 → Exposed table objects (infrastructure, not domain)
 model/                   → domain: data classes, enums, commands
+  routing/               → BalanceTypeRouter, MccRegistry, MerchantRegistry
 exceptions/              → typed exception classes per error scenario
-constants/               → MCC lists, merchant name lists
-utils/                   → stateless helpers (e.g. balance type resolution)
+config/                  → Spring configuration beans
 ```
 
-**Dependency rule:** controllers translate inbound DTOs into domain commands (`TransactionCommand`) before calling services. Services and domain classes must never import from `controller/`. Repository table objects live in `repository/table/` because they are persistence infrastructure, not domain concepts.
+**Dependency rule:** controllers translate inbound DTOs into domain commands (`TransactionCommand`) before calling services. Services, domain classes, and repositories must never import from `controller/`. Repository table objects live in `repository/table/` because they are persistence infrastructure, not domain concepts.
 
-Services are declared as interfaces (ports) so controller tests can mock them without loading a Spring context. Repository interfaces are output ports — keep them; they can be swapped for different persistence backends. Never inject `*Impl` classes directly.
+Services are declared as interfaces (input ports) so controller tests can mock them without loading a Spring context. Repository interfaces are output ports — keep them; they can be swapped for different persistence backends. Never inject `*Impl` classes directly.
+
+**Routing:** MCC codes and merchant names live in `model/routing/MccRegistry` and `model/routing/MerchantRegistry`. Routing logic lives in `model/routing/BalanceTypeRouter`. `TransactionCommand.resolveBalanceType()` is the single call site — never call `BalanceTypeRouter` directly from a service.
 
 ---
 
@@ -37,10 +39,10 @@ Services are declared as interfaces (ports) so controller tests can mock them wi
 
 ### Adding a new feature
 
-1. Define the interface in `service/` or `repository/`.
+1. Define the interface (port) in `service/` or `repository/`.
 2. Implement in the `implementations/` subdirectory.
 3. Add request/response DTOs under `controller/model/request` and `controller/model/response`.
-4. Write a controller test (Mockito + MockMvc, no Spring context) and a service/repository test.
+4. Write a controller test (MockK + MockMvc, no Spring context) and a service/repository test.
 5. If a new table is needed, add an Exposed table object under `repository/table/` and create a new Flyway migration (`V{n}__description.sql`). Never edit existing migrations.
 
 ### Database migrations
@@ -52,9 +54,10 @@ Services are declared as interfaces (ports) so controller tests can mock them wi
 
 ### MCC / merchant routing
 
-- MCC codes are declared in `constants/MccLists.kt`. Add new codes there.
-- Merchant name overrides are declared in `constants/MerchantNames.kt`. Merchant name takes precedence over MCC.
-- Balance type resolution logic lives exclusively in `utils/AccountBalanceTypeUtils.kt`.
+- MCC codes live in `model/routing/MccRegistry.kt`. Add new codes there.
+- Merchant name overrides live in `model/routing/MerchantRegistry.kt`. Merchant name takes precedence over MCC.
+- Routing logic lives exclusively in `model/routing/BalanceTypeRouter.kt`.
+- Callers use `TransactionCommand.resolveBalanceType()` — never call `BalanceTypeRouter` directly.
 
 ### Concurrency
 
@@ -72,7 +75,7 @@ Never use star imports (`import foo.*`). Always list each import explicitly.
 
 Tests use JUnit 5 + MockK. No Spring context is loaded for controller or unit tests — use `MockKAnnotations.init(this)` and `MockMvcBuilders.standaloneSetup(...)`.
 
-Repository integration tests extend `BaseRepositoryIntegrationTest` and run against an in-memory H2 database (profile `test`). The `application-test.properties` disables Flyway and uses `ddl-auto=update`.
+Integration tests extend `AbstractSpringIntegrationTest` and run against a real PostgreSQL instance via Testcontainers.
 
 Run all tests:
 ```bash
@@ -156,7 +159,9 @@ The app exposes Swagger UI at `http://localhost:8080/swagger-ui/index.html`.
 ## What NOT to do
 
 - Do not put business logic in controllers.
+- Do not import from `controller/` in services, domain classes, or repositories.
 - Do not bypass the interface layer (never inject `*Impl` classes directly).
+- Do not call `BalanceTypeRouter` directly from a service — use `TransactionCommand.resolveBalanceType()`.
 - Do not edit applied Flyway migrations.
 - Do not use `docker volume prune` or `docker network prune` — use `docker compose down -v` instead to avoid affecting other local projects.
 - Do not use `postgres:latest` — it is pinned to `postgres:16` for stability.

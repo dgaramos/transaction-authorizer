@@ -12,12 +12,14 @@ Read `CLAUDE.md` before making any change. It documents the architecture, layeri
 
 ## Architecture constraints
 
-The project uses a strict interface/implementation pattern:
+The project follows Hexagonal Architecture (Ports & Adapters). The dependency rule is strict: outer layers depend on inner layers, never the other way around.
 
-- Every service and repository has an interface in the parent package and its implementation in `implementations/`.
+- Every service and repository has an interface (port) in the parent package and its implementation in `implementations/`.
 - Never inject `*Impl` classes directly. Always depend on the interface.
-- Never add business logic to a controller. Controllers delegate to services.
+- Never add business logic to a controller. Controllers translate DTOs into domain commands and delegate to services.
+- Services, domain classes, and repositories must never import from `controller/`.
 - New domain models must extend `BaseModel`. New tables must extend `BaseTable`.
+- Routing logic belongs in `model/routing/`. Never add MCC or merchant routing to a service.
 
 ---
 
@@ -25,9 +27,9 @@ The project uses a strict interface/implementation pattern:
 
 ### Code changes
 
-1. Identify the right layer: controller → service → repository.
+1. Identify the right layer: controller → service (port) → repository (port) → implementation.
 2. If modifying behaviour, update the interface signature first, then the implementation.
-3. Add or update the corresponding test. Controller tests use MockMvc + MockK (no Spring context). Repository tests use H2 via `BaseRepositoryIntegrationTest`.
+3. Add or update the corresponding test. Controller tests use MockMvc + MockK (no Spring context). Integration tests extend `AbstractSpringIntegrationTest` and run against PostgreSQL via Testcontainers.
 4. Run tests before finishing: `./gradlew test`.
 
 ### Database changes
@@ -37,9 +39,10 @@ The project uses a strict interface/implementation pattern:
 
 ### MCC / merchant routing changes
 
-- MCC code lists live in `constants/MccLists.kt`.
-- Merchant name overrides live in `constants/MerchantNames.kt`.
-- Routing logic lives only in `utils/AccountBalanceTypeUtils.kt`. Do not duplicate it elsewhere.
+- MCC codes live in `model/routing/MccRegistry.kt`.
+- Merchant name overrides live in `model/routing/MerchantRegistry.kt`.
+- Routing logic lives only in `model/routing/BalanceTypeRouter.kt`. Do not duplicate it elsewhere.
+- Callers use `TransactionCommand.resolveBalanceType()` — the only valid call site.
 
 ---
 

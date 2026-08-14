@@ -13,10 +13,11 @@ A Spring Boot REST API that authorizes pseudo credit card transactions for a ben
 ## Table of Contents
 
 1. [Database Structure](#database-structure)
-2. [Running the Project](#running-the-project)
-3. [Swagger Documentation](#swagger-documentation)
-4. [Folder Structure](#folder-structure)
-5. [Development Reference](#development-reference)
+2. [Architecture](#architecture)
+3. [Running the Project](#running-the-project)
+4. [Swagger Documentation](#swagger-documentation)
+5. [Folder Structure](#folder-structure)
+6. [Development Reference](#development-reference)
 
 ---
 
@@ -74,6 +75,29 @@ For instructions on exporting to Postman, see the [Swagger Usage Guide](docs/SWA
 
 ---
 
+## Architecture
+
+The project follows **Hexagonal Architecture** (Ports & Adapters). The dependency rule is strict: outer layers depend on inner layers, never the other way around.
+
+```
+controller/          → input adapters (REST): translates HTTP ↔ domain commands
+  model/request/     → inbound DTOs
+  model/response/    → outbound DTOs
+service/             → input ports (interfaces)
+  implementations/   → use case implementations
+repository/          → output ports (interfaces)
+  implementations/   → persistence adapters (Exposed DSL)
+  table/             → Exposed table objects
+model/               → domain: data classes, enums, commands
+  routing/           → BalanceTypeRouter, MccRegistry, MerchantRegistry
+exceptions/          → domain exception types
+config/              → Spring configuration
+```
+
+Controllers translate inbound DTOs into domain commands (`TransactionCommand`) and delegate to services. Services and domain classes never import from `controller/`. Routing logic (MCC → balance type) lives in `model/routing/` and is accessed via `TransactionCommand.resolveBalanceType()`.
+
+---
+
 ## Folder Structure
 
 ```
@@ -93,7 +117,7 @@ docs/                       Setup and usage guides
 
 ## Development Reference
 
-Layered architecture: controller → service → repository, with interface/implementation separation at every layer. Commits follow [Conventional Commits](https://www.conventionalcommits.org/). Branches follow the same `type/description` pattern.
+Commits follow [Conventional Commits](https://www.conventionalcommits.org/). Branches follow the same `type/description` pattern.
 
 - [CLAUDE.md](CLAUDE.md) — architecture, layering rules, migration policy, git conventions, `dev` CLI reference
 - [AGENTS.md](AGENTS.md) — guidance for AI agents working in this codebase
