@@ -4,10 +4,12 @@ import br.com.transactionauthorizer.factory.TestModelFactory
 import br.com.transactionauthorizer.model.CardTransactionStatus
 import br.com.transactionauthorizer.repository.CardTransactionRepository
 import br.com.transactionauthorizer.service.implementations.CardTransactionServiceImpl
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.*
 import java.math.BigDecimal
 import java.util.*
 
@@ -18,7 +20,7 @@ class CardTransactionServiceImplTest {
 
     @BeforeEach
     fun setUp() {
-        cardTransactionRepository = mock()
+        cardTransactionRepository = mockk()
         cardTransactionService = CardTransactionServiceImpl(cardTransactionRepository)
     }
 
@@ -40,18 +42,18 @@ class CardTransactionServiceImplTest {
             cardTransactionStatus = cardTransactionStatus,
             merchant = merchant
         )
-        whenever(cardTransactionRepository.createTransaction(account, totalAmount, mcc, accountBalanceId, cardTransactionStatus, merchant)).thenReturn(cardTransaction)
+        every { cardTransactionRepository.createTransaction(account, totalAmount, mcc, accountBalanceId, cardTransactionStatus, merchant) } returns cardTransaction
 
         val result = cardTransactionService.createTransaction(account, totalAmount, mcc, accountBalanceId, cardTransactionStatus, merchant)
 
-        verify(cardTransactionRepository, times(1)).createTransaction(
+        verify(exactly = 1) { cardTransactionRepository.createTransaction(
             account = account,
             totalAmount = totalAmount,
             mcc = mcc,
             accountBalanceId = accountBalanceId,
             cardTransactionStatus = cardTransactionStatus,
             merchant = merchant
-        )
+        ) }
 
         Assertions.assertEquals(cardTransaction, result)
     }
@@ -67,11 +69,11 @@ class CardTransactionServiceImplTest {
             )
         )
 
-        whenever(cardTransactionRepository.getAllTransactionsByAccountBalanceId(accountBalanceId, offset, limit)).thenReturn(cardTransactions)
+        every { cardTransactionRepository.getAllTransactionsByAccountBalanceId(accountBalanceId, offset, limit) } returns cardTransactions
 
         val result = cardTransactionService.getAllTransactionsByAccountBalanceId(accountBalanceId, offset, limit)
 
-        verify(cardTransactionRepository, times(1)).getAllTransactionsByAccountBalanceId(accountBalanceId = accountBalanceId, offset = offset, limit = limit)
+        verify(exactly = 1) { cardTransactionRepository.getAllTransactionsByAccountBalanceId(accountBalanceId = accountBalanceId, offset = offset, limit = limit) }
 
         Assertions.assertEquals(cardTransactions, result)
     }

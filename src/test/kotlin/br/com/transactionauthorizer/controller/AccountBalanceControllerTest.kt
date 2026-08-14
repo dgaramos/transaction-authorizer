@@ -7,12 +7,13 @@ import br.com.transactionauthorizer.model.CardTransactionStatus
 import br.com.transactionauthorizer.service.AccountBalanceService
 import br.com.transactionauthorizer.service.CardTransactionService
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.mockk.MockKAnnotations
+import io.mockk.every
+import io.mockk.impl.annotations.InjectMockKs
+import io.mockk.impl.annotations.MockK
+import io.mockk.verify
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.InjectMocks
-import org.mockito.Mock
-import org.mockito.kotlin.*
-import org.mockito.MockitoAnnotations
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
@@ -22,19 +23,19 @@ import java.util.UUID
 
 class AccountBalanceControllerTest {
 
-    @InjectMocks
+    @InjectMockKs
     private lateinit var accountBalanceController: AccountBalanceController
 
-    @Mock
+    @MockK
     private lateinit var accountBalanceService: AccountBalanceService
-    @Mock
+    @MockK
     private lateinit var cardTransactionService: CardTransactionService
 
     private lateinit var mockMvc: MockMvc
 
     @BeforeEach
     fun setup() {
-        MockitoAnnotations.openMocks(this)
+        MockKAnnotations.init(this)
         mockMvc = MockMvcBuilders.standaloneSetup(accountBalanceController, cardTransactionService).build()
     }
 
@@ -45,8 +46,7 @@ class AccountBalanceControllerTest {
         val createdBalance = TestModelFactory.buildAccountBalance(accountId = accountId, accountBalanceType = AccountBalanceType.CASH, amount = BigDecimal(0))
         val amount = BigDecimal(0)
 
-        whenever(accountBalanceService.upsertAccountBalance(accountId, AccountBalanceType.CASH))
-            .thenReturn(createdBalance)
+        every { accountBalanceService.upsertAccountBalance(accountId, AccountBalanceType.CASH) } returns createdBalance
 
         val objectMapper = ObjectMapper()
         val jsonRequest = objectMapper.writeValueAsString(request)
@@ -61,8 +61,7 @@ class AccountBalanceControllerTest {
             .andExpect(MockMvcResultMatchers.jsonPath("$.type").value("CASH"))
             .andExpect(MockMvcResultMatchers.jsonPath("$.amount").value(amount))
 
-        verify(accountBalanceService, times(1))
-            .upsertAccountBalance(accountId, AccountBalanceType.CASH)
+        verify(exactly = 1) { accountBalanceService.upsertAccountBalance(accountId, AccountBalanceType.CASH) }
     }
 
     @Test
@@ -79,10 +78,8 @@ class AccountBalanceControllerTest {
                 cardTransactionStatus = CardTransactionStatus.APPROVED
             )
 
-        whenever(accountBalanceService.getAccountBalanceById(balanceId))
-            .thenReturn(accountBalance)
-        whenever(cardTransactionService.getAllTransactionsByAccountBalanceId(balanceId, offset, limit))
-            .thenReturn(listOf(transactions))
+        every { accountBalanceService.getAccountBalanceById(balanceId) } returns accountBalance
+        every { cardTransactionService.getAllTransactionsByAccountBalanceId(balanceId, offset, limit) } returns listOf(transactions)
 
         mockMvc.perform(MockMvcRequestBuilders.get("/api/account-balances/$balanceId?transactionOffset=$offset&transactionLimit=$limit"))
             .andExpect(MockMvcResultMatchers.status().isOk)
@@ -91,10 +88,7 @@ class AccountBalanceControllerTest {
             .andExpect(MockMvcResultMatchers.jsonPath("$.amount").value(100))
             .andExpect(MockMvcResultMatchers.jsonPath("$.transactions.length()").value(1))
 
-
-        verify(accountBalanceService, times(1))
-            .getAccountBalanceById(balanceId)
-        verify(cardTransactionService, times(1))
-            .getAllTransactionsByAccountBalanceId(balanceId, offset, limit)
+        verify(exactly = 1) { accountBalanceService.getAccountBalanceById(balanceId) }
+        verify(exactly = 1) { cardTransactionService.getAllTransactionsByAccountBalanceId(balanceId, offset, limit) }
     }
 }

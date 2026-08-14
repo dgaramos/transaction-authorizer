@@ -1,21 +1,23 @@
 package br.com.transactionauthorizer.service.receive_transaction_service
 
-import br.com.transactionauthorizer.controller.model.request.ReceivedTransactionRequest
 import br.com.transactionauthorizer.exceptions.AccountBalanceNotFoundByAccountIdAndTypeException
 import br.com.transactionauthorizer.exceptions.AccountNotFoundByIdException
 import br.com.transactionauthorizer.factory.TestModelFactory
 import br.com.transactionauthorizer.model.*
+import br.com.transactionauthorizer.model.TransactionCommand
 import br.com.transactionauthorizer.service.AccountBalanceService
 import br.com.transactionauthorizer.service.AccountService
 import br.com.transactionauthorizer.service.CardTransactionService
 import br.com.transactionauthorizer.service.ReceiveTransactionService
 import br.com.transactionauthorizer.service.implementations.ReceiveTransactionServiceImpl
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
-import org.mockito.kotlin.*
 import java.math.BigDecimal
 import java.util.*
 import java.util.stream.Stream
@@ -30,18 +32,18 @@ class ReceiveTransactionServiceTest {
 
     @BeforeEach
     fun setUp() {
-        cardTransactionService = mock()
-        accountBalanceService = mock()
-        accountService = mock()
+        cardTransactionService = mockk()
+        accountBalanceService = mockk()
+        accountService = mockk()
         receiveTransactionService = ReceiveTransactionServiceImpl(cardTransactionService, accountBalanceService, accountService)
     }
 
     @Test
     fun `should return ERROR when account is not found`() {
         val accountId = UUID.randomUUID()
-        val request = ReceivedTransactionRequest(account = accountId.toString(), totalAmount = BigDecimal(50), mcc = "5011", merchant = "CashMerchant")
+        val request = TransactionCommand(account = accountId.toString(), totalAmount = BigDecimal(50), mcc = "5011", merchant = "CashMerchant")
 
-        whenever(accountService.getAccountById(UUID.fromString(request.account))).thenThrow(AccountNotFoundByIdException::class.java)
+        every { accountService.getAccountById(UUID.fromString(request.account)) } throws AccountNotFoundByIdException(UUID.fromString(request.account))
 
         val result = receiveTransactionService.receiveTransaction(request)
 
@@ -53,73 +55,73 @@ class ReceiveTransactionServiceTest {
         val account = TestModelFactory.buildAccount(name = "Jane Doe")
         val cashAccountBalance = TestModelFactory.buildAccountBalance(amount = BigDecimal(100), accountBalanceType = AccountBalanceType.CASH, accountId = account.id)
         val cardTransaction = TestModelFactory.buildCardTransaction(account = account.id.toString(), totalAmount = BigDecimal(50), mcc = "5811", merchant = "MealMerchant", cardTransactionStatus = CardTransactionStatus.APPROVED)
-        val request = ReceivedTransactionRequest(account = account.id.toString(), totalAmount = BigDecimal(50), mcc = "5011", merchant = "CashMerchant")
+        val request = TransactionCommand(account = account.id.toString(), totalAmount = BigDecimal(50), mcc = "5011", merchant = "CashMerchant")
 
-        whenever(accountService.getAccountById(cashAccountBalance.accountId)).thenReturn(account)
-        whenever(accountBalanceService.getAccountBalanceByAccountIdAndType(cashAccountBalance.accountId, cashAccountBalance.accountBalanceType)).thenReturn(cashAccountBalance)
-        whenever(cardTransactionService.createTransaction(
+        every { accountService.getAccountById(cashAccountBalance.accountId) } returns account
+        every { accountBalanceService.getAccountBalanceByAccountIdAndType(cashAccountBalance.accountId, cashAccountBalance.accountBalanceType) } returns cashAccountBalance
+        every { cardTransactionService.createTransaction(
             account = request.account,
             totalAmount = request.totalAmount,
             mcc = request.mcc,
             transactionStatus = CardTransactionStatus.APPROVED,
             accountBalanceId = cashAccountBalance.id,
             merchant = request.merchant
-        )).thenReturn(cardTransaction)
+        ) } returns cardTransaction
+        every { accountBalanceService.updateAccountBalanceAmount(cashAccountBalance.id, cashAccountBalance.amount - request.totalAmount) } returns mockk()
 
         val result = receiveTransactionService.receiveTransaction(request)
 
-        assertEquals("00", result)  // Transaction approved
-        verify(cardTransactionService, times(1)).createTransaction(
+        assertEquals("00", result)
+        verify(exactly = 1) { cardTransactionService.createTransaction(
             account = request.account,
             totalAmount = request.totalAmount,
             mcc = request.mcc,
             transactionStatus = CardTransactionStatus.APPROVED,
             accountBalanceId = cashAccountBalance.id,
             merchant = request.merchant
-        )
-        verify(accountService, times(1)).getAccountById(UUID.fromString(request.account))
-        verify(accountBalanceService, times(1)).getAccountBalanceByAccountIdAndType(cashAccountBalance.accountId, AccountBalanceType.CASH)
-        verify(accountBalanceService, times(0)).getAccountBalanceByAccountIdAndType(cashAccountBalance.accountId, AccountBalanceType.FOOD)
-        verify(accountBalanceService, times(0)).getAccountBalanceByAccountIdAndType(cashAccountBalance.accountId, AccountBalanceType.MEAL)
+        ) }
+        verify(exactly = 1) { accountService.getAccountById(UUID.fromString(request.account)) }
+        verify(exactly = 1) { accountBalanceService.getAccountBalanceByAccountIdAndType(cashAccountBalance.accountId, AccountBalanceType.CASH) }
+        verify(exactly = 0) { accountBalanceService.getAccountBalanceByAccountIdAndType(cashAccountBalance.accountId, AccountBalanceType.FOOD) }
+        verify(exactly = 0) { accountBalanceService.getAccountBalanceByAccountIdAndType(cashAccountBalance.accountId, AccountBalanceType.MEAL) }
     }
 
     @Test
     fun `should deny cash transaction when cash account has insufficient balance`() {
         val account = TestModelFactory.buildAccount(name = "Jane Doe")
         val cashAccountBalance = TestModelFactory.buildAccountBalance(amount = BigDecimal(30), accountBalanceType = AccountBalanceType.CASH, accountId = account.id)
-        val request = ReceivedTransactionRequest(account = account.id.toString(), totalAmount = BigDecimal(50), mcc = "5011", merchant = "CashMerchant")
+        val request = TransactionCommand(account = account.id.toString(), totalAmount = BigDecimal(50), mcc = "5011", merchant = "CashMerchant")
 
-        whenever(accountService.getAccountById(cashAccountBalance.accountId)).thenReturn(account)
-        whenever(accountBalanceService.getAccountBalanceByAccountIdAndType(cashAccountBalance.accountId, cashAccountBalance.accountBalanceType)).thenReturn(cashAccountBalance)
-
+        every { accountService.getAccountById(cashAccountBalance.accountId) } returns account
+        every { accountBalanceService.getAccountBalanceByAccountIdAndType(cashAccountBalance.accountId, cashAccountBalance.accountBalanceType) } returns cashAccountBalance
+        every { cardTransactionService.createTransaction(any(), any(), any(), any(), any(), any()) } returns mockk()
 
         val result = receiveTransactionService.receiveTransaction(request)
 
-        assertEquals("51", result)  // Transaction denied
+        assertEquals("51", result)
 
-        verify(accountService, times(1)).getAccountById(UUID.fromString(request.account))
-        verify(accountBalanceService, times(1)).getAccountBalanceByAccountIdAndType(cashAccountBalance.accountId, AccountBalanceType.CASH)
-        verify(accountBalanceService, times(0)).getAccountBalanceByAccountIdAndType(cashAccountBalance.accountId, AccountBalanceType.FOOD)
-        verify(accountBalanceService, times(0)).getAccountBalanceByAccountIdAndType(cashAccountBalance.accountId, AccountBalanceType.MEAL)
+        verify(exactly = 1) { accountService.getAccountById(UUID.fromString(request.account)) }
+        verify(exactly = 1) { accountBalanceService.getAccountBalanceByAccountIdAndType(cashAccountBalance.accountId, AccountBalanceType.CASH) }
+        verify(exactly = 0) { accountBalanceService.getAccountBalanceByAccountIdAndType(cashAccountBalance.accountId, AccountBalanceType.FOOD) }
+        verify(exactly = 0) { accountBalanceService.getAccountBalanceByAccountIdAndType(cashAccountBalance.accountId, AccountBalanceType.MEAL) }
     }
 
 
     @Test
     fun `should deny cash transaction when cash account is not found`() {
         val account = TestModelFactory.buildAccount(name = "Jane Doe")
-        val request = ReceivedTransactionRequest(account = account.id.toString(), totalAmount = BigDecimal(50), mcc = "5011", merchant = "CashMerchant")
+        val request = TransactionCommand(account = account.id.toString(), totalAmount = BigDecimal(50), mcc = "5011", merchant = "CashMerchant")
 
-        whenever(accountService.getAccountById(account.id)).thenReturn(account)
-        whenever(accountBalanceService.getAccountBalanceByAccountIdAndType(account.id, AccountBalanceType.CASH)).thenThrow(AccountBalanceNotFoundByAccountIdAndTypeException::class.java)
-
+        every { accountService.getAccountById(account.id) } returns account
+        every { accountBalanceService.getAccountBalanceByAccountIdAndType(account.id, AccountBalanceType.CASH) } throws AccountBalanceNotFoundByAccountIdAndTypeException(account.id, AccountBalanceType.CASH)
 
         val result = receiveTransactionService.receiveTransaction(request)
 
-        assertEquals("07", result) // Error in transaction
-        verify(accountService, times(1)).getAccountById(UUID.fromString(request.account))
-        verify(accountBalanceService, times(1)).getAccountBalanceByAccountIdAndType(account.id, AccountBalanceType.CASH)
-        verify(accountBalanceService, times(0)).getAccountBalanceByAccountIdAndType(account.id, AccountBalanceType.FOOD)
-        verify(accountBalanceService, times(0)).getAccountBalanceByAccountIdAndType(account.id, AccountBalanceType.MEAL)
+        assertEquals("07", result)
+        verify(exactly = 1) { accountService.getAccountById(UUID.fromString(request.account)) }
+        verify(exactly = 1) { accountBalanceService.getAccountBalanceByAccountIdAndType(account.id, AccountBalanceType.CASH) }
+        verify(exactly = 0) { accountBalanceService.getAccountBalanceByAccountIdAndType(account.id, AccountBalanceType.FOOD) }
+        verify(exactly = 0) { accountBalanceService.getAccountBalanceByAccountIdAndType(account.id, AccountBalanceType.MEAL) }
     }
 
     @ParameterizedTest
@@ -131,26 +133,28 @@ class ReceiveTransactionServiceTest {
     ) {
         val account = TestModelFactory.buildAccount(name = "Jane Doe")
         val accountBalance = TestModelFactory.buildAccountBalance(amount = BigDecimal(60), accountBalanceType = accountBalanceType, accountId = account.id)
-        val request = ReceivedTransactionRequest(account = account.id.toString(), totalAmount = BigDecimal(50), mcc = mcc, merchant = merchantName)
+        val request = TransactionCommand(account = account.id.toString(), totalAmount = BigDecimal(50), mcc = mcc, merchant = merchantName)
 
-        whenever(accountService.getAccountById(accountBalance.accountId)).thenReturn(account)
-        whenever(accountBalanceService.getAccountBalanceByAccountIdAndType(accountBalance.accountId, accountBalanceType)).thenReturn(accountBalance)
+        every { accountService.getAccountById(accountBalance.accountId) } returns account
+        every { accountBalanceService.getAccountBalanceByAccountIdAndType(accountBalance.accountId, accountBalanceType) } returns accountBalance
+        every { cardTransactionService.createTransaction(any(), any(), any(), any(), any(), any()) } returns mockk()
+        every { accountBalanceService.updateAccountBalanceAmount(accountBalance.id, accountBalance.amount - request.totalAmount) } returns mockk()
 
         val result = receiveTransactionService.receiveTransaction(request)
 
         assertEquals("00", result)
-        verify(accountService, times(1)).getAccountById(accountBalance.accountId)
-        verify(accountBalanceService, times(1)).getAccountBalanceByAccountIdAndType(accountBalance.accountId, accountBalanceType)
-        verify(accountBalanceService, times(0)).getAccountBalanceByAccountIdAndType(accountBalance.accountId, AccountBalanceType.CASH)
+        verify(exactly = 1) { accountService.getAccountById(accountBalance.accountId) }
+        verify(exactly = 1) { accountBalanceService.getAccountBalanceByAccountIdAndType(accountBalance.accountId, accountBalanceType) }
+        verify(exactly = 0) { accountBalanceService.getAccountBalanceByAccountIdAndType(accountBalance.accountId, AccountBalanceType.CASH) }
 
-        verify(cardTransactionService, times(1)).createTransaction(
+        verify(exactly = 1) { cardTransactionService.createTransaction(
             account = request.account,
             totalAmount = request.totalAmount,
             mcc = request.mcc,
             transactionStatus = CardTransactionStatus.APPROVED,
             accountBalanceId = accountBalance.id,
             merchant = request.merchant
-        )
+        ) }
     }
 
     @ParameterizedTest
@@ -166,37 +170,39 @@ class ReceiveTransactionServiceTest {
         val account = TestModelFactory.buildAccount(name = "Jane Doe")
         val nonCashAccountBalance = TestModelFactory.buildAccountBalance(amount = primaryAccountBalance, accountBalanceType = accountBalanceType, accountId = account.id)
         val cashAccountBalance = TestModelFactory.buildAccountBalance(amount = fallbackAccountBalance, accountBalanceType = AccountBalanceType.CASH, accountId = account.id)
-        val request = ReceivedTransactionRequest(account = account.id.toString(), totalAmount = BigDecimal(50), mcc = mcc, merchant = merchantName)
+        val request = TransactionCommand(account = account.id.toString(), totalAmount = BigDecimal(50), mcc = mcc, merchant = merchantName)
 
-        whenever(accountService.getAccountById(nonCashAccountBalance.accountId)).thenReturn(account)
-        whenever(accountBalanceService.getAccountBalanceByAccountIdAndType(nonCashAccountBalance.accountId, accountBalanceType)).thenReturn(nonCashAccountBalance)
-        whenever(accountBalanceService.getAccountBalanceByAccountIdAndType(cashAccountBalance.accountId, AccountBalanceType.CASH)).thenReturn(cashAccountBalance)
+        every { accountService.getAccountById(nonCashAccountBalance.accountId) } returns account
+        every { accountBalanceService.getAccountBalanceByAccountIdAndType(nonCashAccountBalance.accountId, accountBalanceType) } returns nonCashAccountBalance
+        every { accountBalanceService.getAccountBalanceByAccountIdAndType(cashAccountBalance.accountId, AccountBalanceType.CASH) } returns cashAccountBalance
+        every { cardTransactionService.createTransaction(any(), any(), any(), any(), any(), any()) } returns mockk()
+        every { accountBalanceService.updateAccountBalanceAmount(any(), any()) } returns mockk()
 
         val result = receiveTransactionService.receiveTransaction(request)
 
         assertEquals(expectedResult, result)
-        verify(accountService, times(1)).getAccountById(nonCashAccountBalance.accountId)
-        verify(accountBalanceService, times(1)).getAccountBalanceByAccountIdAndType(nonCashAccountBalance.accountId, accountBalanceType)
-        verify(accountBalanceService, times(1)).getAccountBalanceByAccountIdAndType(cashAccountBalance.accountId, AccountBalanceType.CASH)
+        verify(exactly = 1) { accountService.getAccountById(nonCashAccountBalance.accountId) }
+        verify(exactly = 1) { accountBalanceService.getAccountBalanceByAccountIdAndType(nonCashAccountBalance.accountId, accountBalanceType) }
+        verify(exactly = 1) { accountBalanceService.getAccountBalanceByAccountIdAndType(cashAccountBalance.accountId, AccountBalanceType.CASH) }
 
-        if (expectedResult == "00") { // Approved case
-            verify(cardTransactionService, times(1)).createTransaction(
+        if (expectedResult == "00") {
+            verify(exactly = 1) { cardTransactionService.createTransaction(
                 account = request.account,
                 totalAmount = request.totalAmount,
                 mcc = request.mcc,
                 transactionStatus = CardTransactionStatus.APPROVED,
                 accountBalanceId = cashAccountBalance.id,
                 merchant = request.merchant
-            )
-        } else { // Denied case
-            verify(cardTransactionService, times(1)).createTransaction(
+            ) }
+        } else {
+            verify(exactly = 1) { cardTransactionService.createTransaction(
                 account = request.account,
                 totalAmount = request.totalAmount,
                 mcc = request.mcc,
                 transactionStatus = CardTransactionStatus.DENIED,
                 accountBalanceId = nonCashAccountBalance.id,
                 merchant = request.merchant
-            )
+            ) }
         }
     }
 
@@ -213,29 +219,29 @@ class ReceiveTransactionServiceTest {
     ) {
         val account = TestModelFactory.buildAccount(name = "Jane Doe")
         val cashAccountBalance = TestModelFactory.buildAccountBalance(amount = fallbackAccountBalance, accountBalanceType = AccountBalanceType.CASH, accountId = account.id)
-        val request = ReceivedTransactionRequest(account = account.id.toString(), totalAmount = BigDecimal(50), mcc = mcc, merchant = merchantName)
+        val request = TransactionCommand(account = account.id.toString(), totalAmount = BigDecimal(50), mcc = mcc, merchant = merchantName)
 
-        whenever(accountService.getAccountById(cashAccountBalance.accountId)).thenReturn(account)
-        whenever(accountBalanceService.getAccountBalanceByAccountIdAndType(cashAccountBalance.accountId, accountBalanceType)).thenThrow(AccountBalanceNotFoundByAccountIdAndTypeException::class.java)
-        whenever(accountBalanceService.getAccountBalanceByAccountIdAndType(cashAccountBalance.accountId, AccountBalanceType.CASH)).thenReturn(cashAccountBalance)
+        every { accountService.getAccountById(cashAccountBalance.accountId) } returns account
+        every { accountBalanceService.getAccountBalanceByAccountIdAndType(cashAccountBalance.accountId, accountBalanceType) } throws AccountBalanceNotFoundByAccountIdAndTypeException(cashAccountBalance.accountId, accountBalanceType)
+        every { accountBalanceService.getAccountBalanceByAccountIdAndType(cashAccountBalance.accountId, AccountBalanceType.CASH) } returns cashAccountBalance
+        every { cardTransactionService.createTransaction(any(), any(), any(), any(), any(), any()) } returns mockk()
+        every { accountBalanceService.updateAccountBalanceAmount(any(), any()) } returns mockk()
 
         val result = receiveTransactionService.receiveTransaction(request)
 
         assertEquals(expectedResult, result)
-        verify(accountService, times(1)).getAccountById(cashAccountBalance.accountId)
-        verify(accountBalanceService, times(1)).getAccountBalanceByAccountIdAndType(cashAccountBalance.accountId, accountBalanceType)
-        verify(accountBalanceService, times(1)).getAccountBalanceByAccountIdAndType(cashAccountBalance.accountId, AccountBalanceType.CASH)
+        verify(exactly = 1) { accountService.getAccountById(cashAccountBalance.accountId) }
+        verify(exactly = 1) { accountBalanceService.getAccountBalanceByAccountIdAndType(cashAccountBalance.accountId, accountBalanceType) }
+        verify(exactly = 1) { accountBalanceService.getAccountBalanceByAccountIdAndType(cashAccountBalance.accountId, AccountBalanceType.CASH) }
 
-
-        verify(cardTransactionService, times(1)).createTransaction(
+        verify(exactly = 1) { cardTransactionService.createTransaction(
             account = request.account,
             totalAmount = request.totalAmount,
             mcc = request.mcc,
             transactionStatus = expectedTransactionStatus,
             accountBalanceId = cashAccountBalance.id,
             merchant = request.merchant
-        )
-
+        ) }
     }
 
     companion object {

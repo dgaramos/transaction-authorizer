@@ -4,17 +4,18 @@ import br.com.transactionauthorizer.factory.TestModelFactory
 import br.com.transactionauthorizer.model.AccountBalanceType
 import br.com.transactionauthorizer.repository.AccountBalanceRepository
 import br.com.transactionauthorizer.service.implementations.AccountBalanceServiceImpl
+import io.mockk.MockKAnnotations
+import io.mockk.every
+import io.mockk.impl.annotations.MockK
+import io.mockk.verify
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
-import org.mockito.Mock
-import org.mockito.MockitoAnnotations
 import java.math.BigDecimal
 import org.junit.jupiter.api.*
-import org.mockito.kotlin.*
 import java.util.*
 
 class AccountBalanceServiceImplTest {
-    @Mock
+    @MockK
     private lateinit var accountBalanceRepository: AccountBalanceRepository
 
     private lateinit var accountBalanceService: AccountBalanceService
@@ -25,7 +26,7 @@ class AccountBalanceServiceImplTest {
 
     @BeforeEach
     fun setup() {
-        MockitoAnnotations.openMocks(this)
+        MockKAnnotations.init(this)
         accountBalanceService = AccountBalanceServiceImpl(accountBalanceRepository)
     }
 
@@ -36,12 +37,12 @@ class AccountBalanceServiceImplTest {
             accountBalanceType = balanceType,
             amount = amount
         )
-        whenever(accountBalanceRepository.getAccountBalanceById(accountBalance1.id)).thenReturn(accountBalance1)
+        every { accountBalanceRepository.getAccountBalanceById(accountBalance1.id) } returns accountBalance1
 
         val balance = accountBalanceService.getAccountBalanceById(accountBalance1.id)
 
         Assertions.assertNotNull(balance)
-        verify(accountBalanceRepository).getAccountBalanceById(accountBalance1.id)
+        verify(exactly = 1) { accountBalanceRepository.getAccountBalanceById(accountBalance1.id) }
     }
 
     @Test
@@ -52,7 +53,7 @@ class AccountBalanceServiceImplTest {
             amount = amount
         )
 
-        whenever(accountBalanceRepository.upsertAccountBalance(accountId, balanceType,)).thenReturn(accountBalance)
+        every { accountBalanceRepository.upsertAccountBalance(accountId, balanceType) } returns accountBalance
 
         val createdBalance = accountBalanceService.upsertAccountBalance(accountId, balanceType)
 
@@ -61,7 +62,7 @@ class AccountBalanceServiceImplTest {
         Assertions.assertEquals(balanceType, createdBalance.accountBalanceType)
         Assertions.assertEquals(amount, createdBalance.amount)
 
-        verify(accountBalanceRepository).upsertAccountBalance(accountId, balanceType)
+        verify(exactly = 1) { accountBalanceRepository.upsertAccountBalance(accountId, balanceType) }
     }
 
     @Test
@@ -72,7 +73,7 @@ class AccountBalanceServiceImplTest {
             amount = amount
         )
 
-        whenever(accountBalanceRepository.getAccountBalanceByAccountIdAndType(accountId, balanceType)).thenReturn(accountBalance)
+        every { accountBalanceRepository.getAccountBalanceByAccountIdAndType(accountId, balanceType) } returns accountBalance
 
         val fetchedBalance = accountBalanceService.getAccountBalanceByAccountIdAndType(accountId, balanceType)
 
@@ -81,7 +82,7 @@ class AccountBalanceServiceImplTest {
         Assertions.assertEquals(balanceType, fetchedBalance.accountBalanceType)
         Assertions.assertEquals(amount, fetchedBalance.amount)
 
-        verify(accountBalanceRepository).getAccountBalanceByAccountIdAndType(accountId, balanceType)
+        verify(exactly = 1) { accountBalanceRepository.getAccountBalanceByAccountIdAndType(accountId, balanceType) }
     }
 
     @Test
@@ -97,7 +98,7 @@ class AccountBalanceServiceImplTest {
             amount = BigDecimal("50.00")
         )
 
-        whenever(accountBalanceRepository.getAccountBalancesByAccountId(accountId)).thenReturn(listOf(accountBalance1, accountBalance2))
+        every { accountBalanceRepository.getAccountBalancesByAccountId(accountId) } returns listOf(accountBalance1, accountBalance2)
 
         val balances = accountBalanceService.getAccountBalancesByAccountId(accountId)
 
@@ -106,7 +107,7 @@ class AccountBalanceServiceImplTest {
         Assertions.assertEquals(accountId, balances[0].accountId)
         Assertions.assertEquals(accountId, balances[1].accountId)
 
-        verify(accountBalanceRepository).getAccountBalancesByAccountId(accountId)
+        verify(exactly = 1) { accountBalanceRepository.getAccountBalancesByAccountId(accountId) }
     }
 
     @Test
@@ -122,13 +123,13 @@ class AccountBalanceServiceImplTest {
 
         val updatedBalance = accountBalance.copy(amount = newAmount)
 
-        whenever(accountBalanceRepository.updateAccountBalanceAmount(accountBalance.id, newAmount)).thenReturn(updatedBalance)
+        every { accountBalanceRepository.updateAccountBalanceAmount(accountBalance.id, newAmount) } returns updatedBalance
 
         val result = accountBalanceService.updateAccountBalanceAmount(accountBalance.id, newAmount)
 
         Assertions.assertNotNull(result)
         Assertions.assertEquals(newAmount, result.amount)
 
-        verify(accountBalanceRepository).updateAccountBalanceAmount(accountBalance.id, newAmount)
+        verify(exactly = 1) { accountBalanceRepository.updateAccountBalanceAmount(accountBalance.id, newAmount) }
     }
 }

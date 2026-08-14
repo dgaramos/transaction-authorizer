@@ -1,14 +1,16 @@
 package br.com.transactionauthorizer.controller
 
 import br.com.transactionauthorizer.controller.model.request.ReceivedTransactionRequest
+import br.com.transactionauthorizer.model.TransactionCommand
 import br.com.transactionauthorizer.service.ReceiveTransactionService
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.mockk.MockKAnnotations
+import io.mockk.every
+import io.mockk.impl.annotations.InjectMockKs
+import io.mockk.impl.annotations.MockK
+import io.mockk.verify
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.InjectMocks
-import org.mockito.Mock
-import org.mockito.kotlin.*
-import org.mockito.MockitoAnnotations
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
@@ -18,16 +20,16 @@ import java.util.UUID
 
 class ReceiveTransactionControllerTest {
 
-    @InjectMocks
+    @InjectMockKs
     private lateinit var receiveTransactionController: ReceiveTransactionController
-    @Mock
+    @MockK
     private lateinit var receiveTransactionService: ReceiveTransactionService
 
     private lateinit var mockMvc: MockMvc
 
     @BeforeEach
     fun setup() {
-        MockitoAnnotations.openMocks(this)
+        MockKAnnotations.init(this)
         mockMvc = MockMvcBuilders.standaloneSetup(receiveTransactionController).build()
     }
 
@@ -35,10 +37,10 @@ class ReceiveTransactionControllerTest {
     fun `test create receive transaction`() {
         val accountId = UUID.randomUUID()
         val request = ReceivedTransactionRequest(accountId.toString(), BigDecimal("100.00"), "MCC1", "Merchant1")
+        val command = TransactionCommand(accountId.toString(), BigDecimal("100.00"), "MCC1", "Merchant1")
         val transactionCode = "XX"
 
-        whenever(receiveTransactionService.receiveTransaction(request))
-            .thenReturn(transactionCode)
+        every { receiveTransactionService.receiveTransaction(command) } returns transactionCode
 
         val objectMapper = ObjectMapper()
         val jsonRequest = objectMapper.writeValueAsString(request)
@@ -51,8 +53,6 @@ class ReceiveTransactionControllerTest {
             .andExpect(MockMvcResultMatchers.status().isOk)
             .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("XX"))
 
-        verify(receiveTransactionService, times(1))
-            .receiveTransaction(request)
+        verify(exactly = 1) { receiveTransactionService.receiveTransaction(command) }
     }
 }
-

@@ -5,12 +5,12 @@ import br.com.transactionauthorizer.controller.model.response.AccountListRespons
 import br.com.transactionauthorizer.controller.model.response.AccountResponse
 import br.com.transactionauthorizer.service.ManageAccountService
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.mockk.MockKAnnotations
+import io.mockk.every
+import io.mockk.impl.annotations.InjectMockKs
+import io.mockk.impl.annotations.MockK
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.InjectMocks
-import org.mockito.Mock
-import org.mockito.MockitoAnnotations
-import org.mockito.kotlin.whenever
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.test.web.servlet.MockMvc
@@ -21,10 +21,10 @@ import java.util.*
 
 class AccountControllerTest {
 
-    @InjectMocks
+    @InjectMockKs
     private lateinit var accountController: AccountController
 
-    @Mock
+    @MockK
     private lateinit var manageAccountService: ManageAccountService
 
     private lateinit var mockMvc: MockMvc
@@ -32,7 +32,7 @@ class AccountControllerTest {
 
     @BeforeEach
     fun setup() {
-        MockitoAnnotations.openMocks(this)
+        MockKAnnotations.init(this)
         mockMvc = MockMvcBuilders.standaloneSetup(accountController).build()
     }
 
@@ -43,8 +43,7 @@ class AccountControllerTest {
             AccountListResponse(id = UUID.randomUUID().toString(), name = "Account2")
         )
 
-        whenever(manageAccountService.getAllAccounts(0, 10))
-            .thenReturn(ResponseEntity.ok(accountListResponse))
+        every { manageAccountService.getAllAccounts(0, 10) } returns ResponseEntity.ok(accountListResponse)
 
         mockMvc.perform(MockMvcRequestBuilders.get("/api/accounts?offset=0&limit=10"))
             .andExpect(MockMvcResultMatchers.status().isOk)
@@ -62,8 +61,7 @@ class AccountControllerTest {
             balances = listOf()
         )
 
-        whenever(manageAccountService.getAccountById(accountId))
-            .thenReturn(ResponseEntity.ok(accountResponse))
+        every { manageAccountService.getAccountById(accountId) } returns ResponseEntity.ok(accountResponse)
 
         mockMvc.perform(MockMvcRequestBuilders.get("/api/accounts/$accountId"))
             .andExpect(MockMvcResultMatchers.status().isOk)
@@ -81,8 +79,7 @@ class AccountControllerTest {
             balances = listOf()
         )
 
-        whenever(manageAccountService.createAccount(accountRequest))
-            .thenReturn(ResponseEntity.status(HttpStatus.CREATED).body(accountResponse))
+        every { manageAccountService.createAccount(accountRequest) } returns ResponseEntity.status(HttpStatus.CREATED).body(accountResponse)
 
         val jsonRequest = objectMapper.writeValueAsString(accountRequest)
 

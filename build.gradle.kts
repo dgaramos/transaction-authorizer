@@ -56,8 +56,7 @@ dependencies {
 	}
 	testImplementation("org.junit.jupiter:junit-jupiter:5.10.0") // Unified JUnit 5 version
 	testImplementation("org.jetbrains.kotlin:kotlin-test") // Kotlin test utilities
-	testImplementation("org.mockito.kotlin:mockito-kotlin:4.1.0") // Latest Mockito Kotlin
-	testImplementation("org.mockito:mockito-core:4.11.0") // Latest Mockito Core
+	testImplementation("io.mockk:mockk:1.13.12")
 	testImplementation("org.testcontainers:testcontainers:1.19.3")
 	testImplementation("org.testcontainers:postgresql:1.19.3")
 	testImplementation("org.testcontainers:junit-jupiter:1.19.3")

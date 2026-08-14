@@ -5,13 +5,14 @@ import br.com.transactionauthorizer.factory.TestModelFactory
 import br.com.transactionauthorizer.model.AccountBalance
 import br.com.transactionauthorizer.model.AccountBalanceType
 import br.com.transactionauthorizer.service.implementations.ManageAccountServiceImpl
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.*
 import org.springframework.http.HttpStatus
 import java.util.*
-import kotlin.random.Random
 
 class ManageAccountServiceImplTest {
 
@@ -21,8 +22,8 @@ class ManageAccountServiceImplTest {
 
     @BeforeEach
     fun setUp() {
-        accountService = mock()
-        accountBalanceService = mock()
+        accountService = mockk()
+        accountBalanceService = mockk()
         manageAccountService = ManageAccountServiceImpl(accountService, accountBalanceService)
     }
 
@@ -32,13 +33,13 @@ class ManageAccountServiceImplTest {
             TestModelFactory.buildAccount(name = "Account 1"),
             TestModelFactory.buildAccount(name = "Account 2")
         )
-        whenever(accountService.getAllAccounts()).thenReturn(accounts)
+        every { accountService.getAllAccounts() } returns accounts
 
         val response = manageAccountService.getAllAccounts()
 
         assertEquals(HttpStatus.OK, response.statusCode)
         assertEquals(2, response.body?.size)
-        verify(accountService, times(1)).getAllAccounts()
+        verify(exactly = 1) { accountService.getAllAccounts() }
     }
 
     @Test
@@ -48,38 +49,38 @@ class ManageAccountServiceImplTest {
         val balances = listOf(
             AccountBalance(accountId = accountId, accountBalanceType = AccountBalanceType.CASH, amount = 100.toBigDecimal())
         )
-        whenever(accountService.getAccountById(accountId)).thenReturn(account)
-        whenever(accountBalanceService.getAccountBalancesByAccountId(accountId)).thenReturn(balances)
+        every { accountService.getAccountById(accountId) } returns account
+        every { accountBalanceService.getAccountBalancesByAccountId(accountId) } returns balances
 
         val response = manageAccountService.getAccountById(accountId)
 
         assertEquals(HttpStatus.OK, response.statusCode)
         assertEquals("Account 1", response.body?.name)
         assertEquals(1, response.body?.balances?.size)
-        verify(accountService, times(1)).getAccountById(accountId)
-        verify(accountBalanceService, times(1)).getAccountBalancesByAccountId(accountId)
+        verify(exactly = 1) { accountService.getAccountById(accountId) }
+        verify(exactly = 1) { accountBalanceService.getAccountBalancesByAccountId(accountId) }
     }
 
     @Test
     fun `should create a new account`() {
         val accountRequest = AccountRequest(name = "New Account")
-        val account = TestModelFactory.buildAccount( name = accountRequest.name)
+        val account = TestModelFactory.buildAccount(name = accountRequest.name)
         val balances = AccountBalanceType.entries.map { balanceType ->
             TestModelFactory.buildAccountBalance(id = UUID.randomUUID(), accountId = account.id, accountBalanceType = balanceType, amount = 0.toBigDecimal())
         }
-        whenever(accountService.createAccount(accountRequest.name)).thenReturn(account)
-        whenever(accountBalanceService.upsertAccountBalance(account.id, AccountBalanceType.CASH)).thenReturn(balances[0])
-        whenever(accountBalanceService.upsertAccountBalance(account.id, AccountBalanceType.FOOD)).thenReturn(balances[1])
-        whenever(accountBalanceService.upsertAccountBalance(account.id, AccountBalanceType.MEAL)).thenReturn(balances[2])
+        every { accountService.createAccount(accountRequest.name) } returns account
+        every { accountBalanceService.upsertAccountBalance(account.id, AccountBalanceType.CASH) } returns balances[0]
+        every { accountBalanceService.upsertAccountBalance(account.id, AccountBalanceType.FOOD) } returns balances[1]
+        every { accountBalanceService.upsertAccountBalance(account.id, AccountBalanceType.MEAL) } returns balances[2]
 
         val response = manageAccountService.createAccount(accountRequest)
 
         assertEquals(HttpStatus.CREATED, response.statusCode)
         assertEquals("New Account", response.body?.name)
         assertEquals(3, response.body?.balances?.size)
-        verify(accountService, times(1)).createAccount(accountRequest.name)
-        verify(accountBalanceService, times(1)).upsertAccountBalance(account.id, AccountBalanceType.CASH)
-        verify(accountBalanceService, times(1)).upsertAccountBalance(account.id, AccountBalanceType.MEAL)
-        verify(accountBalanceService, times(1)).upsertAccountBalance(account.id, AccountBalanceType.FOOD)
+        verify(exactly = 1) { accountService.createAccount(accountRequest.name) }
+        verify(exactly = 1) { accountBalanceService.upsertAccountBalance(account.id, AccountBalanceType.CASH) }
+        verify(exactly = 1) { accountBalanceService.upsertAccountBalance(account.id, AccountBalanceType.MEAL) }
+        verify(exactly = 1) { accountBalanceService.upsertAccountBalance(account.id, AccountBalanceType.FOOD) }
     }
 }
